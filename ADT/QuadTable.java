@@ -28,6 +28,7 @@ public class QuadTable {
         return this.currentIndex;
     }
 
+    // TODO: Add index checker for adding new quad
     // Adds new entry to quad table and increases the current available index
     public void AddQuad(int opcode, int op1, int op2, int op3){
         this.table[this.currentIndex][0] = opcode;
@@ -48,6 +49,10 @@ public class QuadTable {
         this.table[index][1] = op1;
         this.table[index][2] = op2;
         this.table[index][3] = op3;
+    }
+
+    public int getMax(){
+        return this.maxSize;
     }
 
     // Prints header and each quad table entry to specified file
