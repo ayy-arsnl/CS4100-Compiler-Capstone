@@ -42,7 +42,7 @@ import ADT.*;
 public class mainHW3 {
 
     public static void main(String[] args) throws IOException {
-        String filePath = "d:\\"; 
+        String filePath = "/home/alexander/testoutputs/"; 
         Interpreter interp = new Interpreter();
         SymbolTable st;
         QuadTable qt;
