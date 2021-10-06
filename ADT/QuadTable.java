@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-
 // Class definition for Quad Table
 public class QuadTable {
     private int maxSize;
