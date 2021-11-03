@@ -373,8 +373,20 @@ public class Lexical {
     char currCh;
 
     private token getIdent() {
-
-        return dummyGet();
+        //      int lookup = IDENT;
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+        currCh = GetNextChar();
+        while (isLetter(currCh)||(isDigit(currCh)||(currCh == '$')||(currCh=='_'))) {
+        result.lexeme = result.lexeme + currCh; //extend lexeme
+        currCh = GetNextChar();
+        }
+        // end of token, lookup or IDENT      
+                
+        result.code = reserveWords.LookupName(result.lexeme);
+        if (result.code == ReserveTable.notFound)
+            result.code = IDENT_ID;
+        return result;
     }
 
     private token getNumber() {
