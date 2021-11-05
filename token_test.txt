@@ -1,0 +1,2 @@
+STRING "this is my $t1ng!"
+integer x

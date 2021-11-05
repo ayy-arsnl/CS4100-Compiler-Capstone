@@ -1,0 +1,4 @@
+INDEX | SYMBOL | KIND | DTYPE | VALUE 
+-----------------------
+0       "this is my $t1ng!" c        S        "this is my $t1ng!"
+1       x        v        I        0       

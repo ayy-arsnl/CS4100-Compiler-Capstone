@@ -20,7 +20,7 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
+import java.util.Currency;
 /**
  *
  * @author abrouill
@@ -378,24 +378,56 @@ public class Lexical {
         result.lexeme = "" + currCh; //have the first char
         currCh = GetNextChar();
         while (isLetter(currCh)||(isDigit(currCh)||(currCh == '$')||(currCh=='_'))) {
-        result.lexeme = result.lexeme + currCh; //extend lexeme
-        currCh = GetNextChar();
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
         }
         // end of token, lookup or IDENT      
                 
         result.code = reserveWords.LookupName(result.lexeme);
-        if (result.code == ReserveTable.notFound)
+        if (result.code == -1) // ReserveTable.notFound
             result.code = IDENT_ID;
+
+        result.mnemonic = mnemonics.LookupCode(result.code);
         return result;
+        //return dummyGet();
     }
 
     private token getNumber() {
         /* a number is:   <digit>+[.<digit>*[E[+|-]<digit>+]] */
-        return dummyGet();
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+        currCh = GetNextChar();
+        while (isDigit(currCh) || currCh == '.' || currCh == 'e' || currCh == 'E' || currCh == '+' || currCh == '-') {
+            
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+        }
+        // end of token, lookup or IDENT      
+                
+        result.code = 51;
+
+        result.mnemonic = mnemonics.LookupCode(result.code);
+        return result;
+        //return dummyGet();
+        // return dummyGet();
     }
 
     private token getString() {
-        return dummyGet();
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+        currCh = GetNextChar();
+        while (currCh != '"' && currCh != '\n' && currCh != '\r') {
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+        }
+        // end of token, lookup or IDENT      
+        result.lexeme += currCh;  
+        currCh = GetNextChar();      
+        result.code = 53;
+
+        result.mnemonic = mnemonics.LookupCode(result.code);
+        return result;
+        // return dummyGet();
     }
 
     private token getOneTwoChar() {
@@ -510,7 +542,7 @@ public class Lexical {
         if (result != null) {
 // THIS LINE REMOVED-- PUT BACK IN TO USE LOOKUP            result.mnemonic = mnemonics.LookupCode(result.code);
             result = checkTruncate(result);
-            if (printToken) {
+            if (printToken) { // THIS IS TURNED OFF BY DEFAULT
                 System.out.println("\t" + result.mnemonic + " | \t" + String.format("%04d", result.code) + " | \t" + result.lexeme);
             }
         }

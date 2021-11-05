@@ -11,7 +11,7 @@ import ADT.*;
 public class mainHW4 {
 
     public static void main(String[] args) throws IOException {
-        String fileAndPath = "d:\\LexicalTestFA21.txt";
+        String fileAndPath = "/home/alexander/Documents/UCCS/Fall 2021/CS4100/CS4100 Compiler Capstone/token_test.txt";
         System.out.println("Lexical for " + fileAndPath);
         boolean traceOn = true;
         // Create a symbol table to store appropriate3 symbols found
