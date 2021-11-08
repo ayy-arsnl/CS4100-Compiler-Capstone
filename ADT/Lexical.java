@@ -372,6 +372,7 @@ public class Lexical {
 //global char
     char currCh;
 
+    // This gets idenifiers including reserve words
     private token getIdent() {
         //      int lookup = IDENT;
         token result = new token();
@@ -389,7 +390,6 @@ public class Lexical {
 
         result.mnemonic = mnemonics.LookupCode(result.code);
         return result;
-        //return dummyGet();
     }
 
     private token getNumber() {
@@ -397,41 +397,128 @@ public class Lexical {
         token result = new token();
         result.lexeme = "" + currCh; //have the first char
         currCh = GetNextChar();
-        while (isDigit(currCh) || currCh == '.' || currCh == 'e' || currCh == 'E' || currCh == '+' || currCh == '-') {
-            
+
+        // Get any other digits <digit>+
+        while (isDigit(currCh)) { // || currCh == '.' || currCh == 'e' || currCh == 'E' || currCh == '+' || currCh == '-'
             result.lexeme = result.lexeme + currCh; //extend lexeme
             currCh = GetNextChar();
         }
-        // end of token, lookup or IDENT      
-                
-        result.code = 51;
+
+        if(currCh == '.'){
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+
+            // Get digits after decimal
+            while (isDigit(currCh)) {
+                result.lexeme = result.lexeme + currCh; //extend lexeme
+                currCh = GetNextChar();
+            }
+            
+            if(currCh == 'e' || currCh == 'E'){
+                result.lexeme = result.lexeme + currCh;
+                currCh = GetNextChar();
+                if(currCh == '+' || currCh == '-'){
+                    result.lexeme = result.lexeme + currCh;
+                    currCh = GetNextChar();
+                    while(isDigit(currCh)){
+                        result.lexeme = result.lexeme + currCh;
+                        currCh = GetNextChar();
+                    }
+                }
+                else {
+                    while(isDigit(currCh)){
+                        result.lexeme = result.lexeme + currCh;
+                        currCh = GetNextChar();
+                    }
+                }
+            } // end check for e/E  
+            result.code = FLOAT_ID; 
+        } // end check for decimal
+        else{
+            result.code = INTEGER_ID;
+        }
 
         result.mnemonic = mnemonics.LookupCode(result.code);
         return result;
-        //return dummyGet();
-        // return dummyGet();
-    }
+    } // end getNumber()
 
     private token getString() {
         token result = new token();
-        result.lexeme = "" + currCh; //have the first char
+        boolean closedString = false;
+        //result.lexeme = "" + currCh; //have the first char
         currCh = GetNextChar();
         while (currCh != '"' && currCh != '\n' && currCh != '\r') {
             result.lexeme = result.lexeme + currCh; //extend lexeme
             currCh = GetNextChar();
         }
-        // end of token, lookup or IDENT      
-        result.lexeme += currCh;  
-        currCh = GetNextChar();      
-        result.code = 53;
+        if(currCh == '"') closedString = true;
 
-        result.mnemonic = mnemonics.LookupCode(result.code);
+        if(closedString){
+            result.code = STRING_ID;
+            result.mnemonic = mnemonics.LookupCode(result.code);
+        }
+        else{
+            result.code = UNKNOWN_CHAR;
+            result.mnemonic = mnemonics.LookupCode(result.code);
+            System.out.println("Unterminated String");
+        }
+        // end of token, lookup or IDENT       
+        currCh = GetNextChar();      
         return result;
-        // return dummyGet();
     }
 
     private token getOneTwoChar() {
-        return dummyGet();
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+
+        if(isPrefix(currCh)){ // This indicated that we have a 2 char token
+            
+            // if prefix current + next (via peek) is a 2 char token
+            if(reserveWords.LookupName(result.lexeme + PeekNextChar()) != -1){
+                currCh = GetNextChar();
+                result.lexeme += currCh;
+                result.code = reserveWords.LookupName(result.lexeme);
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+                // if(result.code != -1){
+                //     result.mnemonic = mnemonics.LookupCode(result.code);
+                //     currCh = GetNextChar();
+                //     return result;
+                // }
+                // else {
+                //     //System.out.println("2 Char token not recognized");
+                //     result.lexeme += currCh;
+                //     result.code = UNKNOWN_CHAR;
+                //     result.mnemonic = mnemonics.LookupCode(result.code);
+                //     currCh = GetNextChar();
+                //     return result;
+                // }
+            }
+            else{ // if current is a prefix but following char doesn't make valid 2 char token
+                result.code = reserveWords.LookupName(result.lexeme);
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+            }
+            
+        }
+        else { // 1 char token
+            result.code = reserveWords.LookupName(result.lexeme);
+            if(result.code != -1){
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+            }
+            else {
+                //System.out.println("1 Char token not recognized");
+                //result.lexeme += currCh;
+                result.code = UNKNOWN_CHAR;
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+            }
+        }
     }
 
     // Checks to see if a string contains a valid DOUBLE 
@@ -547,8 +634,17 @@ public class Lexical {
             }
         }
         return result;
-
     }
 
-   
+    public void printLexToFile(String filename, token result) throws IOException {
+        File outputFile = new File(filename);
+        FileWriter writer = new FileWriter(outputFile, true);
+        String out = "\t" + result.mnemonic + " | \t" + String.format("%04d", result.code) + " | \t" + result.lexeme + "\n";
+        try {
+            writer.write(out);
+        } catch (IOException e) {
+            System.out.println("ERROR: Failed to print to file");
+        }
+        writer.close();
+    }
 }
