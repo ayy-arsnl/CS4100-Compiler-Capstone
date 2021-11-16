@@ -20,7 +20,7 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
+import java.util.Currency;
 /**
  *
  * @author abrouill
@@ -180,57 +180,57 @@ public class Lexical {
 /* @@@ */
     private void initMnemonics(ReserveTable mnemonics) {
         mnemonics.Add("GOTO", 0);
-        mnemonics.Add("INTG", 1);
-        mnemonics.Add("_TO_", 2);
-        mnemonics.Add("_DO_", 3);
-        mnemonics.Add("_IF_", 4);
-        mnemonics.Add("THEN", 5);
-        mnemonics.Add("ELSE", 6);
-        mnemonics.Add("FOR_", 7);
-        mnemonics.Add("_OF_", 8);
-        mnemonics.Add("WRTN", 9);
-        mnemonics.Add("READ", 10);
-        mnemonics.Add("BGIN", 11);
-        mnemonics.Add("END_", 12);
-        mnemonics.Add("VAR_", 13);
-        mnemonics.Add("WHLE", 14);
-        mnemonics.Add("MODL", 15);
-        mnemonics.Add("LABL", 16);
-        mnemonics.Add("REPT", 17);
-        mnemonics.Add("UNTL", 18);
-        mnemonics.Add("PROC", 19);
-        mnemonics.Add("DOWN", 20);
-        mnemonics.Add("FUNC", 21);
-        mnemonics.Add("RETN", 22);
-        mnemonics.Add("FLOT", 23);
-        mnemonics.Add("STRG", 24);
-        mnemonics.Add("ARRY", 25);
+        mnemonics.Add("INTGR", 1);
+        mnemonics.Add("TO___", 2);
+        mnemonics.Add("DO___", 3);
+        mnemonics.Add("IF___", 4);
+        mnemonics.Add("THEN_", 5);
+        mnemonics.Add("ELSE_", 6);
+        mnemonics.Add("FOR__", 7);
+        mnemonics.Add("OF___", 8);
+        mnemonics.Add("WRTLN", 9);
+        mnemonics.Add("READ_", 10);
+        mnemonics.Add("BEGIN", 11);
+        mnemonics.Add("END__", 12);
+        mnemonics.Add("VAR__", 13);
+        mnemonics.Add("WHILE", 14);
+        mnemonics.Add("MODUL", 15);
+        mnemonics.Add("LABEL", 16);
+        mnemonics.Add("REPT_", 17);
+        mnemonics.Add("UNTIL", 18);
+        mnemonics.Add("PROCT", 19);
+        mnemonics.Add("DOWNT", 20);
+        mnemonics.Add("FUNCT", 21);
+        mnemonics.Add("RETRN", 22);
+        mnemonics.Add("FLOAT", 23);
+        mnemonics.Add("STRNG", 24);
+        mnemonics.Add("ARRAY", 25);
 
         //1 and 2-char
-        mnemonics.Add("DIVD", 30);
-        mnemonics.Add("MULT", 31);
-        mnemonics.Add("PLUS", 32);
-        mnemonics.Add("MINS", 33);
-        mnemonics.Add("LPAR", 34);
-        mnemonics.Add("RPAR", 35);
-        mnemonics.Add("SEMI", 36);
-        mnemonics.Add("ASGN", 37);
-        mnemonics.Add("GRTR", 38);
-        mnemonics.Add("LESS", 39);
-        mnemonics.Add("GREQ", 40);
-        mnemonics.Add("LEEQ", 41);
-        mnemonics.Add("EQLS", 42);
-        mnemonics.Add("NEQL", 43);
-        mnemonics.Add("COMA", 44);
-        mnemonics.Add("LBRK", 45);
-        mnemonics.Add("RBRK", 46);
-        mnemonics.Add("COLN", 47);
-        mnemonics.Add("PERD", 48);
-        mnemonics.Add("IDNT", 50);
-        mnemonics.Add("ICNS", 51);
-        mnemonics.Add("FCNS", 52);
-        mnemonics.Add("SCNS", 53);
-        mnemonics.Add("UNKN", 99);
+        mnemonics.Add("DIVID", 30);
+        mnemonics.Add("MULTI", 31);
+        mnemonics.Add("PLUS_", 32);
+        mnemonics.Add("MINUS", 33);
+        mnemonics.Add("LPAR_", 34);
+        mnemonics.Add("RPAR_", 35);
+        mnemonics.Add("SEMIC", 36);
+        mnemonics.Add("ASIGN", 37);
+        mnemonics.Add("GRTR_", 38);
+        mnemonics.Add("LESS_", 39);
+        mnemonics.Add("GRTEQ", 40);
+        mnemonics.Add("LESEQ", 41);
+        mnemonics.Add("EQLS_", 42);
+        mnemonics.Add("NTEQL", 43);
+        mnemonics.Add("COMMA", 44);
+        mnemonics.Add("LBRKT", 45);
+        mnemonics.Add("RBRKT", 46);
+        mnemonics.Add("COLON", 47);
+        mnemonics.Add("PERD_", 48);
+        mnemonics.Add("IDENT", 50);
+        mnemonics.Add("ICNST", 51);
+        mnemonics.Add("FCNST", 52);
+        mnemonics.Add("SCNST", 53);
+        mnemonics.Add("UNKWN", 99);
 
     }
 
@@ -372,22 +372,153 @@ public class Lexical {
 //global char
     char currCh;
 
+    // This gets idenifiers including reserve words
     private token getIdent() {
+        //      int lookup = IDENT;
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+        currCh = GetNextChar();
+        while (isLetter(currCh)||(isDigit(currCh)||(currCh == '$')||(currCh=='_'))) {
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+        }
+        // end of token, lookup or IDENT      
+                
+        result.code = reserveWords.LookupName(result.lexeme);
+        if (result.code == -1) // ReserveTable.notFound
+            result.code = IDENT_ID;
 
-        return dummyGet();
+        result.mnemonic = mnemonics.LookupCode(result.code);
+        return result;
     }
 
     private token getNumber() {
         /* a number is:   <digit>+[.<digit>*[E[+|-]<digit>+]] */
-        return dummyGet();
-    }
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+        currCh = GetNextChar();
+
+        // Get any other digits <digit>+
+        while (isDigit(currCh)) { // || currCh == '.' || currCh == 'e' || currCh == 'E' || currCh == '+' || currCh == '-'
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+        }
+
+        if(currCh == '.'){
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+
+            // Get digits after decimal
+            while (isDigit(currCh)) {
+                result.lexeme = result.lexeme + currCh; //extend lexeme
+                currCh = GetNextChar();
+            }
+            
+            if(currCh == 'e' || currCh == 'E'){
+                result.lexeme = result.lexeme + currCh;
+                currCh = GetNextChar();
+                if(currCh == '+' || currCh == '-'){
+                    result.lexeme = result.lexeme + currCh;
+                    currCh = GetNextChar();
+                    while(isDigit(currCh)){
+                        result.lexeme = result.lexeme + currCh;
+                        currCh = GetNextChar();
+                    }
+                }
+                else {
+                    while(isDigit(currCh)){
+                        result.lexeme = result.lexeme + currCh;
+                        currCh = GetNextChar();
+                    }
+                }
+            } // end check for e/E  
+            result.code = FLOAT_ID; 
+        } // end check for decimal
+        else{
+            result.code = INTEGER_ID;
+        }
+
+        result.mnemonic = mnemonics.LookupCode(result.code);
+        return result;
+    } // end getNumber()
 
     private token getString() {
-        return dummyGet();
+        token result = new token();
+        boolean closedString = false;
+        //result.lexeme = "" + currCh; //have the first char
+        currCh = GetNextChar();
+        while (currCh != '"' && currCh != '\n' && currCh != '\r') {
+            result.lexeme = result.lexeme + currCh; //extend lexeme
+            currCh = GetNextChar();
+        }
+        if(currCh == '"') closedString = true;
+
+        if(closedString){
+            result.code = STRING_ID;
+            result.mnemonic = mnemonics.LookupCode(result.code);
+        }
+        else{
+            result.code = UNKNOWN_CHAR;
+            result.mnemonic = mnemonics.LookupCode(result.code);
+            System.out.println("Unterminated String");
+        }
+        // end of token, lookup or IDENT       
+        currCh = GetNextChar();      
+        return result;
     }
 
     private token getOneTwoChar() {
-        return dummyGet();
+        token result = new token();
+        result.lexeme = "" + currCh; //have the first char
+
+        if(isPrefix(currCh)){ // This indicated that we have a 2 char token
+            
+            // if prefix current + next (via peek) is a 2 char token
+            if(reserveWords.LookupName(result.lexeme + PeekNextChar()) != -1){
+                currCh = GetNextChar();
+                result.lexeme += currCh;
+                result.code = reserveWords.LookupName(result.lexeme);
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+                // if(result.code != -1){
+                //     result.mnemonic = mnemonics.LookupCode(result.code);
+                //     currCh = GetNextChar();
+                //     return result;
+                // }
+                // else {
+                //     //System.out.println("2 Char token not recognized");
+                //     result.lexeme += currCh;
+                //     result.code = UNKNOWN_CHAR;
+                //     result.mnemonic = mnemonics.LookupCode(result.code);
+                //     currCh = GetNextChar();
+                //     return result;
+                // }
+            }
+            else{ // if current is a prefix but following char doesn't make valid 2 char token
+                result.code = reserveWords.LookupName(result.lexeme);
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+            }
+            
+        }
+        else { // 1 char token
+            result.code = reserveWords.LookupName(result.lexeme);
+            if(result.code != -1){
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+            }
+            else {
+                //System.out.println("1 Char token not recognized");
+                //result.lexeme += currCh;
+                result.code = UNKNOWN_CHAR;
+                result.mnemonic = mnemonics.LookupCode(result.code);
+                currCh = GetNextChar();
+                return result;
+            }
+        }
     }
 
     // Checks to see if a string contains a valid DOUBLE 
@@ -498,13 +629,22 @@ public class Lexical {
         if (result != null) {
 // THIS LINE REMOVED-- PUT BACK IN TO USE LOOKUP            result.mnemonic = mnemonics.LookupCode(result.code);
             result = checkTruncate(result);
-            if (printToken) {
+            if (printToken) { // THIS IS TURNED OFF BY DEFAULT
                 System.out.println("\t" + result.mnemonic + " | \t" + String.format("%04d", result.code) + " | \t" + result.lexeme);
             }
         }
         return result;
-
     }
 
-   
+    public void printLexToFile(String filename, token result) throws IOException {
+        File outputFile = new File(filename);
+        FileWriter writer = new FileWriter(outputFile, true);
+        String out = "\t" + result.mnemonic + " | \t" + String.format("%04d", result.code) + " | \t" + result.lexeme + "\n";
+        try {
+            writer.write(out);
+        } catch (IOException e) {
+            System.out.println("ERROR: Failed to print to file");
+        }
+        writer.close();
+    }
 }

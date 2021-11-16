@@ -1,0 +1,208 @@
+Lexical for /home/alexander/Documents/UCCS/Fall 2021/CS4100/CS4100 Compiler Capstone/LexicalTestFA21.txt
+0001 
+0002 
+0003 
+0004 
+0005 {Here is Lexical Test file 1 # *) which 
+0006   has a comment that
+0007   spans 3 lines }
+0008 {}
+0009 
+0010 a:=1;
+        IDNT |  0050 |  a
+        ASGN |  0037 |  :=
+        ICNS |  0051 |  1
+        SEMI |  0036 |  ;
+0011 b:=a+b-c*21.7/22;
+        IDNT |  0050 |  b
+        ASGN |  0037 |  :=
+        IDNT |  0050 |  a
+        PLUS |  0032 |  +
+        IDNT |  0050 |  b
+        MINS |  0033 |  -
+        IDNT |  0050 |  c
+        MULT |  0031 |  *
+        FCNS |  0052 |  21.7
+        DIVD |  0030 |  /
+        ICNS |  0051 |  22
+        SEMI |  0036 |  ;
+0012      123456789112345 (*this number is 15 chars, truncate to 6 *)
+Integer length > 6, truncated 123456789112345 to 123456
+        ICNS |  0051 |  123456789112345
+0013      12.34567891134567 (*this number is 17 chars, but should be 
+Float length > 12, truncated 12.34567891134567 to 12.345678911
+        FCNS |  0052 |  12.34567891134567
+0014                         truncated to 12 in the symbol table*)
+0015 hereisareallylongidentifierthatistoolong := 66;
+Identifier length > 20, truncated hereisareallylongidentifierthatistoolong to hereisareallylongide
+        IDNT |  0050 |  hereisareallylongidentifierthatistoolong
+        ASGN |  0037 |  :=
+        ICNS |  0051 |  66
+        SEMI |  0036 |  ;
+0016   hereisareallylongidentifierthatissameasabovetruncated := 76.5E-12;
+Identifier length > 20, truncated hereisareallylongidentifierthatissameasabovetruncated to hereisareallylongide
+        IDNT |  0050 |  hereisareallylongidentifierthatissameasabovetruncated
+        ASGN |  0037 |  :=
+        FCNS |  0052 |  76.5E-12
+        SEMI |  0036 |  ;
+0017   109.E+10      12.33E5 
+        FCNS |  0052 |  109.E+10
+        FCNS |  0052 |  12.33E5
+0018   12.4 E-2
+        FCNS |  0052 |  12.4
+        IDNT |  0050 |  E
+        MINS |  0033 |  -
+        ICNS |  0051 |  2
+0019   
+0020    *) {<-- Orphaned closed comment is just '*' and ')' returned as separate tokens}
+        MULT |  0031 |  *
+        RPAR |  0035 |  )
+0021            myString_1 : = "an unfinished string makes an error ;
+        IDNT |  0050 |  myString_1
+        COLN |  0047 |  :
+        EQLS |  0042 |  =
+Unterminated String
+0022   test single #and two char tokens 
+        UNKN |  0099 |  an unfinished string makes an error ;
+        IDNT |  0050 |  test
+        IDNT |  0050 |  single
+        UNKN |  0099 |  #
+        IDNT |  0050 |  and
+        IDNT |  0050 |  two
+        IDNT |  0050 |  char
+        IDNT |  0050 |  tokens
+0023      # /*^&%+-  some more (   ) (**) ;:=><>=<==<>,[]:.
+        UNKN |  0099 |  #
+        DIVD |  0030 |  /
+        MULT |  0031 |  *
+        UNKN |  0099 |  ^
+        UNKN |  0099 |  &
+        UNKN |  0099 |  %
+        PLUS |  0032 |  +
+        MINS |  0033 |  -
+        IDNT |  0050 |  some
+        IDNT |  0050 |  more
+        LPAR |  0034 |  (
+        RPAR |  0035 |  )
+        SEMI |  0036 |  ;
+        ASGN |  0037 |  :=
+        GRTR |  0038 |  >
+        NEQL |  0043 |  <>
+        EQLS |  0042 |  =
+        LEEQ |  0041 |  <=
+        EQLS |  0042 |  =
+        NEQL |  0043 |  <>
+        COMA |  0044 |  ,
+        LBRK |  0045 |  [
+        RBRK |  0046 |  ]
+        COLN |  0047 |  :
+        PERD |  0048 |  .
+0024 (*reserve words 
+0025 below........................... *)  "but first is a good string"
+        SCNS |  0053 |  but first is a good string
+0026   GOTO JumpOut;  INTEGER TO DO
+        GOTO |  0000 |  GOTO
+        IDNT |  0050 |  JumpOut
+        SEMI |  0036 |  ;
+        INTG |  0001 |  INTEGER
+        _TO_ |  0002 |  TO
+        _DO_ |  0003 |  DO
+0027    begin  if not then that else nothing
+        BGIN |  0011 |  begin
+        _IF_ |  0004 |  if
+        IDNT |  0050 |  not
+        THEN |  0005 |  then
+        IDNT |  0050 |  that
+        ELSE |  0006 |  else
+        IDNT |  0050 |  nothing
+0028 THEN ELSE
+        THEN |  0005 |  THEN
+        ELSE |  0006 |  ELSE
+0029 For I := 1 to 100.E7 of float do
+        FOR_ |  0007 |  For
+        IDNT |  0050 |  I
+        ASGN |  0037 |  :=
+        ICNS |  0051 |  1
+        _TO_ |  0002 |  to
+        FCNS |  0052 |  100.E7
+        _OF_ |  0008 |  of
+        FLOT |  0023 |  float
+        _DO_ |  0003 |  do
+0030     WRITELN
+        WRTN |  0009 |  WRITELN
+0031     BEGIN
+        BGIN |  0011 |  BEGIN
+0032     END
+        END_ |  0012 |  END
+0033   declare  ARRAY 
+        IDNT |  0050 |  declare
+        ARRY |  0025 |  ARRAY
+0034    VAR WHILE  UNIT LABEL  REPEAT  UNTIL done = TRUE;
+        VAR_ |  0013 |  VAR
+        WHLE |  0014 |  WHILE
+        IDNT |  0050 |  UNIT
+        LABL |  0016 |  LABEL
+        REPT |  0017 |  REPEAT
+        UNTL |  0018 |  UNTIL
+        IDNT |  0050 |  done
+        EQLS |  0042 |  =
+        IDNT |  0050 |  TRUE
+        SEMI |  0036 |  ;
+0035 
+0036  PROCEDURE  DOWNTO does READLN   RETURN
+        PROC |  0019 |  PROCEDURE
+        DOWN |  0020 |  DOWNTO
+        IDNT |  0050 |  does
+        READ |  0010 |  READLN
+        RETN |  0022 |  RETURN
+0037    FLOAT
+        FLOT |  0023 |  FLOAT
+0038    STRING
+        STRG |  0024 |  STRING
+0039 
+0040 Beginning not reserve writeln.   !@#$%^&*()_+
+        IDNT |  0050 |  Beginning
+        IDNT |  0050 |  not
+        IDNT |  0050 |  reserve
+        WRTN |  0009 |  writeln
+        PERD |  0048 |  .
+        UNKN |  0099 |  !
+        UNKN |  0099 |  @
+        UNKN |  0099 |  #
+        UNKN |  0099 |  $
+        UNKN |  0099 |  %
+        UNKN |  0099 |  ^
+        UNKN |  0099 |  &
+        MULT |  0031 |  *
+        LPAR |  0034 |  (
+        RPAR |  0035 |  )
+        UNKN |  0099 |  _
+        PLUS |  0032 |  +
+0041 sum := 0.0;
+        IDNT |  0050 |  sum
+        ASGN |  0037 |  :=
+        FCNS |  0052 |  0.0
+        SEMI |  0036 |  ;
+0042 sum := sum + 2;
+        IDNT |  0050 |  sum
+        ASGN |  0037 |  :=
+        IDNT |  0050 |  sum
+        PLUS |  0032 |  +
+        ICNS |  0051 |  2
+        SEMI |  0036 |  ;
+0043 What if 2. is found?
+        IDNT |  0050 |  What
+        _IF_ |  0004 |  if
+        FCNS |  0052 |  2.
+        IDNT |  0050 |  is
+        IDNT |  0050 |  found
+        UNKN |  0099 |  ?
+0044 
+0045 (* end of file comes
+0046    before the end of this 
+0047    comment-- Throw an Error!
+0048 
+0049 
+0050                      
+Comment not terminated before End Of File
+Done.
