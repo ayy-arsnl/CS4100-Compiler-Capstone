@@ -87,6 +87,14 @@ public class Lexical {
         }
     }
 
+    public int codeFor(String mnemonic){
+        return mnemonics.LookupName(mnemonic);
+    }
+    
+    public String reserveFor(String mnemonic){
+        return reserveWords.LookupCode(mnemonics.LookupName(mnemonic));
+    }
+
     private token dummyGet() {
         token result = new token();
         result.lexeme = "" + currCh; //have the first char
