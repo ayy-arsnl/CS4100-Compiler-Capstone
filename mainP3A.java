@@ -9,7 +9,10 @@ import ADT.*;
 public class mainP3A {
 
     public static void main(String[] args) {
-        String filePath = "/home/alexander/Documents/UCCS/Fall 2021/CS4100/CS4100 Compiler Capstone/SyntaxTestFA21.txt";
+
+        // Laptop: /home/alexander/Documents/UCCS/cs4100/CS4100-Compiler-Capstone/
+        // Desktop: /home/alexander/Documents/UCCS/Fall 2021/CS4100/CS4100 Compiler Capstone/
+        String filePath = "/home/alexander/Documents/UCCS/cs4100/CS4100-Compiler-Capstone/SyntaxMinimumTestFA21.txt";
         boolean traceon = true;
         Syntactic parser = new Syntactic(filePath, traceon);
         parser.parse();

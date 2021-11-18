@@ -1,0 +1,40 @@
+0001 MODULE mytest;
+	MODUL | 	0015 | 	MODULE
+--> Entering Program
+	IDENT | 	0050 | 	mytest
+	SEMIC | 	0036 | 	;
+0002 BEGIN
+	BEGIN | 	0011 | 	BEGIN
+ --> Entering Block
+0003 count := total;  
+	IDENT | 	0050 | 	count
+  --> Entering Statement
+   --> Entering handleAssignment
+	ASIGN | 	0037 | 	:=
+    --> Entering Variable
+    <-- Exiting Variable
+	IDENT | 	0050 | 	total
+    --> Entering SimpleExpression
+	SEMIC | 	0036 | 	;
+    <-- Exiting SimpleExpression
+   <-- Exiting handleAssignment
+  <-- Exiting Statement
+0004 a:=b
+	IDENT | 	0050 | 	a
+  --> Entering Statement
+   --> Entering handleAssignment
+	ASIGN | 	0037 | 	:=
+    --> Entering Variable
+    <-- Exiting Variable
+	IDENT | 	0050 | 	b
+    --> Entering SimpleExpression
+0005 END.
+	END__ | 	0012 | 	END
+    <-- Exiting SimpleExpression
+   <-- Exiting handleAssignment
+  <-- Exiting Statement
+ERROR: Expected END but found END
+ <-- Exiting Block
+ERROR: Expected . but found END
+<-- Exiting Program
+Done.

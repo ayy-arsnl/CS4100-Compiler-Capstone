@@ -70,7 +70,7 @@ public class Syntactic {
         }
 
         // This non-term is used to uniquely mark the program identifier
-        if (token.code == lex.codeFor("IDNT")) {
+        if (token.code == lex.codeFor("IDENT")) {
             // Because this is the progIdentifier, it will get a 'p' type to prevent re-use as a var
             symbolList.UpdateSymbol(symbolList.LookupSymbol(token.lexeme), 'p', 0);
             //move on
@@ -86,26 +86,26 @@ public class Syntactic {
             return -1;
         }
         trace("Program", true);
-        if (token.code == lex.codeFor("MODL")) {
+        if (token.code == lex.codeFor("MODUL")) {
             token = lex.GetNextToken();
             recur = ProgIdentifier();
-            if (token.code == lex.codeFor("SEMI")) {
+            if (token.code == lex.codeFor("SEMIC")) {
                 token = lex.GetNextToken();
                 recur = Block();
-                if (token.code == lex.codeFor("PERD")) {
+                if (token.code == lex.codeFor("PERD_")) {
                     if (!anyErrors) {
                         System.out.println("Success.");
                     } else {
                         System.out.println("Compilation failed.");
                     }
                 } else {
-                    error(lex.reserveFor("PERD"), token.lexeme);
+                    error(lex.reserveFor("PERD_"), token.lexeme);
                 }
             } else {
-                error(lex.reserveFor("SEMI"), token.lexeme);
+                error(lex.reserveFor("SEMIC"), token.lexeme);
             }
         } else {
-            error(lex.reserveFor("MODL"), token.lexeme);
+            error(lex.reserveFor("MODUL"), token.lexeme);
         }
         trace("Program", false);
         return recur;
@@ -119,21 +119,21 @@ public class Syntactic {
         }
         trace("Block", true);
 
-        if (token.code == lex.codeFor("BGIN")) {
+        if (token.code == lex.codeFor("BEGIN")) {
             token = lex.GetNextToken();
             recur = Statement();
-            while ((token.code == lex.codeFor("SEMI")) && (!lex.EOF()) && (!anyErrors)) {
+            while ((token.code == lex.codeFor("SEMIC")) && (!lex.EOF()) && (!anyErrors)) {
                 token = lex.GetNextToken();
                 recur = Statement();
             }
             if (token.code == lex.codeFor("END_")) {
                 token = lex.GetNextToken();
             } else {
-                error(lex.reserveFor("END_"), token.lexeme);
+                error(lex.reserveFor("END__"), token.lexeme);
             }
 
         } else {
-            error(lex.reserveFor("BGIN"), token.lexeme);
+            error(lex.reserveFor("BEGIN"), token.lexeme);
         }
 
         trace("Block", false);
@@ -151,11 +151,11 @@ public class Syntactic {
         //have ident already in order to get to here, handle as Variable
         recur = Variable();  //Variable moves ahead, next token ready
 
-        if (token.code == lex.codeFor("ASGN")) {
+        if (token.code == lex.codeFor("ASIGN")) {
             token = lex.GetNextToken();
             recur = SimpleExpression();
         } else {
-            error(lex.reserveFor("ASGN"), token.lexeme);
+            error(lex.reserveFor("ASIGN"), token.lexeme);
         }
 
         trace("handleAssignment", false);
@@ -171,14 +171,15 @@ public class Syntactic {
         }
 
         trace("SimpleExpression", true);
-        if (token.code == lex.codeFor("IDNT")) {
+        if (token.code == lex.codeFor("IDENT")) {
             token = lex.GetNextToken();
         }
         trace("SimpleExpression", false);
         return recur;
     }
 
-//Non Terminal    
+//Non Terminal
+//<statement>-> <variable> $COLON-EQUALS <simple expression>  
     private int Statement() {
         int recur = 0;
         if (anyErrors) {
@@ -187,10 +188,10 @@ public class Syntactic {
 
         trace("Statement", true);
 
-        if (token.code == lex.codeFor("IDNT")) {  //must be an ASSUGNMENT
+        if (token.code == lex.codeFor("IDENT")) {  //must be an ASSUGNMENT
             recur = handleAssignment();
         } else {
-            if (token.code == lex.codeFor("_IF_")) {  //must be an ASSUGNMENT
+            if (token.code == lex.codeFor("IF___")) {  //must be an ASSUGNMENT
                 // this would handle the rest of the IF statment IN PART B
             } else // if/elses should look for the other possible statement starts...  
             //  but not until PART B
@@ -200,6 +201,153 @@ public class Syntactic {
         }
 
         trace("Statement", false);
+        return recur;
+    }
+
+    // <variable> -> <identifier> 
+    private int Variable(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        if(token.code == lex.codeFor("IDENT")){
+            recur = ProgIdentifier();
+
+        } else {
+            if (token.code == lex.codeFor("IF___")) {  //must be an ASSUGNMENT
+                // this would handle the rest of the IF statment IN PART B
+            } else // if/elses should look for the other possible statement starts...  
+            //  but not until PART B
+            {
+                error("variable start", token.lexeme);
+            }
+        }
+
+        trace("Variable", true);
+    // unique non-terminal stuff
+        trace("Variable", false);
+        return recur;
+    }
+
+    // <addop> -> $PLUS | $MINUS
+    private int AddOp(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
+        return recur;
+    }
+    
+    // <sign> -> $PLUS | $MINUS
+    private int Sign(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
+        return recur;
+    } 
+
+    // <term> -> <factor> {<mulop> <factor> }*
+    private int Term(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        // <term> -> <factor> {<mulop> <factor> }*
+        if(token.code == lex.codeFor("")){
+            recur = ProgIdentifier();
+
+        } else {
+            if (token.code == lex.codeFor("IF___")) {  //must be an ASSUGNMENT
+                // this would handle the rest of the IF statment IN PART B
+            } else // if/elses should look for the other possible statement starts...  
+            //  but not until PART B
+            {
+                error("Statement start", token.lexeme);
+            }
+        }
+
+        trace("Term", true);
+    // unique non-terminal stuff
+        trace("Term", false);
+        return recur;
+    }
+
+    // <mulop> -> $MULTIPLY | $DIVIDE
+    private int MulOp(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
+        return recur;
+    } 
+
+    /* <factor> -> <unsigned constant> |
+                   <variable> |
+                   $LPAR <simple expression> $RPAR
+    */ 
+    private int Factor(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
+        return recur;
+    } 
+
+    // <unsigned constant> -> <unsigned number>
+    private int UConst(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
+        return recur;
+    } 
+
+    // <unsigned number>-> $FLOAT | $INTEGER
+    private int UNumber(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
+        return recur;
+    } 
+
+    // <identifier> -> $IDENTIFIER
+    private int Identifier(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("NameOfThisMethod", true);
+    // unique non-terminal stuff
+        trace("NameOfThisMethod", false);
         return recur;
     }
 
@@ -248,6 +396,7 @@ public class Syntactic {
         }
         return result;
     }
+ 
 
 /*  Template for all the non-terminal method bodies
 private int exampleNonTerminal(){
