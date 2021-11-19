@@ -126,7 +126,7 @@ public class Syntactic {
                 token = lex.GetNextToken();
                 recur = Statement();
             }
-            if (token.code == lex.codeFor("END_")) {
+            if (token.code == lex.codeFor("END__")) {
                 token = lex.GetNextToken();
             } else {
                 error(lex.reserveFor("END__"), token.lexeme);
@@ -164,6 +164,21 @@ public class Syntactic {
 
 // NT This is dummied in to only work for an identifier.  MUST BE 
 //  COMPLETED TO IMPLEMENT CFG <simple expression>
+    // private int SimpleExpression() {
+    //     int recur = 0;
+    //     if (anyErrors) {
+    //         return -1;
+    //     }
+
+    //     trace("SimpleExpression", true);
+    //     if (token.code == lex.codeFor("IDENT")) {
+    //         token = lex.GetNextToken();
+    //     }
+    //     trace("SimpleExpression", false);
+    //     return recur;
+    // }
+    
+    // <simple expression> -> [<sign>]  <term>  {<addop>  <term>}*
     private int SimpleExpression() {
         int recur = 0;
         if (anyErrors) {
@@ -171,9 +186,22 @@ public class Syntactic {
         }
 
         trace("SimpleExpression", true);
-        if (token.code == lex.codeFor("IDENT")) {
-            token = lex.GetNextToken();
+
+        // [<sign>]
+        if (token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")) {
+            recur = Sign();
         }
+        
+        // <term>
+        recur = Term();
+            
+        //{<addop>  <term>}*
+        while(token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")){
+            recur = AddOp();
+            token = lex.GetNextToken();
+            recur = Term();
+        }
+
         trace("SimpleExpression", false);
         return recur;
     }
@@ -211,21 +239,16 @@ public class Syntactic {
             return -1;
         }
 
-        if(token.code == lex.codeFor("IDENT")){
-            recur = ProgIdentifier();
+        trace("Variable", true);
 
+        if(token.code == lex.codeFor("IDENT")){
+            recur = Identifier();
         } else {
-            if (token.code == lex.codeFor("IF___")) {  //must be an ASSUGNMENT
-                // this would handle the rest of the IF statment IN PART B
-            } else // if/elses should look for the other possible statement starts...  
-            //  but not until PART B
-            {
-                error("variable start", token.lexeme);
-            }
+            error("variable start", token.lexeme);
         }
 
-        trace("Variable", true);
-    // unique non-terminal stuff
+        token = lex.GetNextToken();
+
         trace("Variable", false);
         return recur;
     }
@@ -237,9 +260,20 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
-    // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("AddOp", true);
+
+        if(token.code == lex.codeFor("PLUS_")){
+            // terminal stuff
+        }
+        else if(token.code == lex.codeFor("MINUS")){
+            // terminal stuff
+        }
+        else {
+            error("AddOp", token.lexeme);
+        }
+
+        trace("AddOp", false);
+
         return recur;
     }
     
@@ -250,9 +284,17 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
-    // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("Sign", true);
+        if(token.code == lex.codeFor("PLUS_")){
+            // terminal stuff
+        }
+        else if(token.code == lex.codeFor("MINUS")){
+            // terminal stuff
+        }
+        else {
+            error("Sign", token.lexeme);
+        }
+        trace("Sign", false);
         return recur;
     } 
 
@@ -263,22 +305,16 @@ public class Syntactic {
             return -1;
         }
 
-        // <term> -> <factor> {<mulop> <factor> }*
-        if(token.code == lex.codeFor("")){
-            recur = ProgIdentifier();
+        trace("Term", true);
 
-        } else {
-            if (token.code == lex.codeFor("IF___")) {  //must be an ASSUGNMENT
-                // this would handle the rest of the IF statment IN PART B
-            } else // if/elses should look for the other possible statement starts...  
-            //  but not until PART B
-            {
-                error("Statement start", token.lexeme);
-            }
+        // <term> -> <factor> {<mulop> <factor> }*
+        recur = Factor();
+        token = lex.GetNextToken();
+        while(token.code == lex.codeFor("MULTI") || token.code == lex.codeFor("DIVID")){
+                recur = MulOp();
+                token = lex.GetNextToken();
         }
 
-        trace("Term", true);
-    // unique non-terminal stuff
         trace("Term", false);
         return recur;
     }
@@ -290,9 +326,20 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
-    // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("MulOp", true);
+
+        if(token.code == lex.codeFor("MULTI")){
+            // terminal stuff
+        }
+        else if(token.code == lex.codeFor("DIVID")){
+            // terminal stuff
+        }
+        else {
+            error("AddOp", token.lexeme);
+        }
+
+        trace("MulOp", false);
+        
         return recur;
     } 
 
@@ -306,9 +353,28 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
-    // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("Factor", true);
+        if(token.code == lex.codeFor("ICNST")){
+            recur = UConst();
+        }
+        else if(token.code == lex.codeFor("IDENT")){
+            recur = Identifier();
+        }
+        else if(token.code == lex.codeFor("LPAR_")){
+            token = lex.GetNextToken();
+            recur = SimpleExpression();
+            token = lex.GetNextToken();
+            if(token.code == lex.codeFor("RPAR_")){
+                // token = lex.GetNextToken();
+            }
+            else{
+                error("RPAR", token.lexeme);
+            }
+        }
+        else{
+            error("Factor start", token.lexeme);
+        }
+        trace("Factor", false);
         return recur;
     } 
 
@@ -319,9 +385,17 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
-    // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("UConst", true);
+        if(token.code == lex.codeFor("ICNST")){
+            recur = UNumber();
+        }
+        else if(token.code == lex.codeFor("FCNST")){
+            recur = UNumber();
+        }
+        else{
+            error("Uconst", token.lexeme);
+        }
+        trace("UConst", false);
         return recur;
     } 
 
@@ -332,9 +406,19 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
-    // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("UNumber", true);
+
+        if(token.code == lex.codeFor("FCNST")){
+
+        }
+        else if(token.code == lex.codeFor("ICNST")) {
+
+        }
+        else{
+            error("UNumber", token.lexeme);
+        }
+
+        trace("UNumber", false);
         return recur;
     } 
 
@@ -345,9 +429,9 @@ public class Syntactic {
             return -1;
         }
 
-        trace("NameOfThisMethod", true);
+        trace("Identifier", true);
     // unique non-terminal stuff
-        trace("NameOfThisMethod", false);
+        trace("Identifier", false);
         return recur;
     }
 
