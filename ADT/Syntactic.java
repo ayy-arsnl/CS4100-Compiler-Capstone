@@ -190,6 +190,7 @@ public class Syntactic {
         // [<sign>]
         if (token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")) {
             recur = Sign();
+            token = lex.GetNextToken();
         }
         
         // <term>
@@ -313,6 +314,8 @@ public class Syntactic {
         while(token.code == lex.codeFor("MULTI") || token.code == lex.codeFor("DIVID")){
                 recur = MulOp();
                 token = lex.GetNextToken();
+                recur = Factor();
+                token = lex.GetNextToken();
         }
 
         trace("Term", false);
@@ -335,7 +338,7 @@ public class Syntactic {
             // terminal stuff
         }
         else {
-            error("AddOp", token.lexeme);
+            error("MulOp", token.lexeme);
         }
 
         trace("MulOp", false);
@@ -354,7 +357,7 @@ public class Syntactic {
         }
 
         trace("Factor", true);
-        if(token.code == lex.codeFor("ICNST")){
+        if(token.code == lex.codeFor("ICNST") || token.code == lex.codeFor("FCNST")){
             recur = UConst();
         }
         else if(token.code == lex.codeFor("IDENT")){
@@ -363,7 +366,7 @@ public class Syntactic {
         else if(token.code == lex.codeFor("LPAR_")){
             token = lex.GetNextToken();
             recur = SimpleExpression();
-            token = lex.GetNextToken();
+            //token = lex.GetNextToken();
             if(token.code == lex.codeFor("RPAR_")){
                 // token = lex.GetNextToken();
             }
