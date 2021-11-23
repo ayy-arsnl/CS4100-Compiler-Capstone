@@ -242,6 +242,7 @@ public class Syntactic {
 
         trace("Variable", true);
 
+        // <identifier>
         if(token.code == lex.codeFor("IDENT")){
             recur = Identifier();
         } else {
@@ -263,18 +264,19 @@ public class Syntactic {
 
         trace("AddOp", true);
 
+        // $PLUS
         if(token.code == lex.codeFor("PLUS_")){
-            // terminal stuff
+            // terminal stuff (probably in code generation part)
         }
+        // $MINUS
         else if(token.code == lex.codeFor("MINUS")){
-            // terminal stuff
+            // terminal stuff (probably in code generation part)
         }
         else {
             error("AddOp", token.lexeme);
         }
 
         trace("AddOp", false);
-
         return recur;
     }
     
@@ -286,15 +288,19 @@ public class Syntactic {
         }
 
         trace("Sign", true);
+
+        // $PLUS
         if(token.code == lex.codeFor("PLUS_")){
-            // terminal stuff
+            // terminal stuff (probably in code generation part)
         }
+        // $MINUS
         else if(token.code == lex.codeFor("MINUS")){
-            // terminal stuff
+            // terminal stuff (probably in code generation part)
         }
         else {
             error("Sign", token.lexeme);
         }
+
         trace("Sign", false);
         return recur;
     } 
@@ -308,9 +314,11 @@ public class Syntactic {
 
         trace("Term", true);
 
-        // <term> -> <factor> {<mulop> <factor> }*
+        // <factor> 
         recur = Factor();
         token = lex.GetNextToken();
+
+        // { <mulop> <factor> }*
         while(token.code == lex.codeFor("MULTI") || token.code == lex.codeFor("DIVID")){
                 recur = MulOp();
                 token = lex.GetNextToken();
@@ -331,11 +339,13 @@ public class Syntactic {
 
         trace("MulOp", true);
 
+        // $MULTIPLY
         if(token.code == lex.codeFor("MULTI")){
-            // terminal stuff
+            // terminal stuff (probably in code generation part)
         }
+        // $DIVIDE
         else if(token.code == lex.codeFor("DIVID")){
-            // terminal stuff
+            // terminal stuff (probably in code generation part)
         }
         else {
             error("MulOp", token.lexeme);
@@ -363,10 +373,14 @@ public class Syntactic {
         else if(token.code == lex.codeFor("IDENT")){
             recur = Identifier();
         }
+        // $LPAR
         else if(token.code == lex.codeFor("LPAR_")){
             token = lex.GetNextToken();
+
+            // <simple expression>
             recur = SimpleExpression();
             //token = lex.GetNextToken();
+            // $RPAR
             if(token.code == lex.codeFor("RPAR_")){
                 // token = lex.GetNextToken();
             }
@@ -389,10 +403,15 @@ public class Syntactic {
         }
 
         trace("UConst", true);
+
+        // <unsigned constant>
         if(token.code == lex.codeFor("ICNST")){
+            // <unsigned number>
             recur = UNumber();
         }
+        // <unsigned constant>
         else if(token.code == lex.codeFor("FCNST")){
+            // <unsigned number>
             recur = UNumber();
         }
         else{
@@ -411,9 +430,11 @@ public class Syntactic {
 
         trace("UNumber", true);
 
+        // $FLOAT
         if(token.code == lex.codeFor("FCNST")){
 
         }
+        // $INTEGER
         else if(token.code == lex.codeFor("ICNST")) {
 
         }
@@ -433,7 +454,8 @@ public class Syntactic {
         }
 
         trace("Identifier", true);
-    // unique non-terminal stuff
+    // I assume for the next part for code generation, 
+    // stuff will go here.
         trace("Identifier", false);
         return recur;
     }
