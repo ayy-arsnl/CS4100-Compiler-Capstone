@@ -1,0 +1,148 @@
+Alexander Urquhart
+CS4100 Fall 2021
+----------Bad Syntax 1 Test File----------
+0001 
+0002 module BadProg1;
+	MODUL | 	0015 | 	module
+--> Entering Program
+	IDENT | 	0050 | 	BadProg1
+	SEMIC | 	0036 | 	;
+0003 
+0004 (* This Part A test file should have one syntax error! *)
+0005 
+0006 begin
+	BEGIN | 	0011 | 	begin
+ --> Entering Block
+0007 { The only statements for Part A are ASSIGNMENTS with EXPRESSIONS }
+0008 
+0009 sum:=(27*first)+ 3.14*radius*radius;
+	IDENT | 	0050 | 	sum
+  --> Entering Statement
+   --> Entering handleAssignment
+    --> Entering Variable
+     --> Entering Identifier
+     <-- Exiting Identifier
+	ASIGN | 	0037 | 	:=
+    <-- Exiting Variable
+	LPAR_ | 	0034 | 	(
+    --> Entering SimpleExpression
+     --> Entering Term
+      --> Entering Factor
+	ICNST | 	0051 | 	27
+       --> Entering SimpleExpression
+        --> Entering Term
+         --> Entering Factor
+          --> Entering UConst
+           --> Entering UNumber
+           <-- Exiting UNumber
+          <-- Exiting UConst
+         <-- Exiting Factor
+	MULTI | 	0031 | 	*
+         --> Entering MulOp
+         <-- Exiting MulOp
+	IDENT | 	0050 | 	first
+         --> Entering Factor
+          --> Entering Identifier
+          <-- Exiting Identifier
+         <-- Exiting Factor
+	RPAR_ | 	0035 | 	)
+        <-- Exiting Term
+       <-- Exiting SimpleExpression
+      <-- Exiting Factor
+	PLUS_ | 	0032 | 	+
+     <-- Exiting Term
+     --> Entering AddOp
+     <-- Exiting AddOp
+	FCNST | 	0052 | 	3.14
+     --> Entering Term
+      --> Entering Factor
+       --> Entering UConst
+        --> Entering UNumber
+        <-- Exiting UNumber
+       <-- Exiting UConst
+      <-- Exiting Factor
+	MULTI | 	0031 | 	*
+      --> Entering MulOp
+      <-- Exiting MulOp
+	IDENT | 	0050 | 	radius
+      --> Entering Factor
+       --> Entering Identifier
+       <-- Exiting Identifier
+      <-- Exiting Factor
+	MULTI | 	0031 | 	*
+      --> Entering MulOp
+      <-- Exiting MulOp
+	IDENT | 	0050 | 	radius
+      --> Entering Factor
+       --> Entering Identifier
+       <-- Exiting Identifier
+      <-- Exiting Factor
+	SEMIC | 	0036 | 	;
+     <-- Exiting Term
+    <-- Exiting SimpleExpression
+   <-- Exiting handleAssignment
+  <-- Exiting Statement
+0010 
+0011 (* missing left paren below... where is it discovered? *)
+0012 a :=(a+c)*b-d)                ;
+	IDENT | 	0050 | 	a
+  --> Entering Statement
+   --> Entering handleAssignment
+    --> Entering Variable
+     --> Entering Identifier
+     <-- Exiting Identifier
+	ASIGN | 	0037 | 	:=
+    <-- Exiting Variable
+	LPAR_ | 	0034 | 	(
+    --> Entering SimpleExpression
+     --> Entering Term
+      --> Entering Factor
+	IDENT | 	0050 | 	a
+       --> Entering SimpleExpression
+        --> Entering Term
+         --> Entering Factor
+          --> Entering Identifier
+          <-- Exiting Identifier
+         <-- Exiting Factor
+	PLUS_ | 	0032 | 	+
+        <-- Exiting Term
+        --> Entering AddOp
+        <-- Exiting AddOp
+	IDENT | 	0050 | 	c
+        --> Entering Term
+         --> Entering Factor
+          --> Entering Identifier
+          <-- Exiting Identifier
+         <-- Exiting Factor
+	RPAR_ | 	0035 | 	)
+        <-- Exiting Term
+       <-- Exiting SimpleExpression
+      <-- Exiting Factor
+	MULTI | 	0031 | 	*
+      --> Entering MulOp
+      <-- Exiting MulOp
+	IDENT | 	0050 | 	b
+      --> Entering Factor
+       --> Entering Identifier
+       <-- Exiting Identifier
+      <-- Exiting Factor
+	MINUS | 	0033 | 	-
+     <-- Exiting Term
+     --> Entering AddOp
+     <-- Exiting AddOp
+	IDENT | 	0050 | 	d
+     --> Entering Term
+      --> Entering Factor
+       --> Entering Identifier
+       <-- Exiting Identifier
+      <-- Exiting Factor
+	RPAR_ | 	0035 | 	)
+     <-- Exiting Term
+    <-- Exiting SimpleExpression
+   <-- Exiting handleAssignment
+  <-- Exiting Statement
+ERROR: Expected END but found )
+ <-- Exiting Block
+ERROR: Expected . but found )
+<-- Exiting Program
+Done.
