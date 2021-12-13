@@ -1,0 +1,4 @@
+module CodegenBASIC;
+begin
+a := 2
+end. 

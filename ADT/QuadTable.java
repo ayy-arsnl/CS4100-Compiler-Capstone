@@ -68,7 +68,7 @@ public class QuadTable {
             }
             
             // Prints out each entry in the quad table to specified file
-            for(int i = 0; i < maxSize; i++){
+            for(int i = 0; i < currentIndex; i++){
                 String opcode = String.valueOf(GetQuad(i, 0));
                 String op1 = String.valueOf(GetQuad(i, 1));
                 String op2 = String.valueOf(GetQuad(i, 2));

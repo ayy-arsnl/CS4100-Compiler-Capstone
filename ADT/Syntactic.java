@@ -25,6 +25,10 @@ Add 2 lines which prints each token found by GetNextToken:
  */
 package ADT;
 
+import java.io.IOException;
+
+import javax.print.event.PrintJobAttributeEvent;
+
 /**
  *
  * @author abrouill
@@ -33,6 +37,8 @@ public class Syntactic {
 
     private String filein;              //The full file path to input file
     private SymbolTable symbolList;     //Symbol table storing ident/const
+    private Interpreter interp;
+    private QuadTable quads;
     private Lexical lex;                //Lexical analyzer 
     private Lexical.token token;        //Next Token retrieved 
     // private ReserveTable reserveWords = lex.getReserves(); //a few more than # reserves
@@ -41,25 +47,78 @@ public class Syntactic {
     private int level = 0;              //Controls indent for trace mode
     private boolean anyErrors;          //Set TRUE if an error happens 
 
-    private final int symbolSize = 250;
+    private final int symbolSize = 250; // originally 250
+    private final int quadSize = 1500;
+    //private int genSymbolCount;
+    private final char genSymbolChar = '@';
+
+    private int Minus1Index;
+    private int Plus1Index;
+
+   
 
     public Syntactic(String filename, boolean traceOn) {
         filein = filename;
         traceon = traceOn;
         symbolList = new SymbolTable(symbolSize);
+        Minus1Index = symbolList.AddSymbol("-1", 'C', -1);
+        Plus1Index = symbolList.AddSymbol("1", 'C', 1);
+
+        quads = new QuadTable(quadSize);
+        interp = new Interpreter();
+
         lex = new Lexical(filein, symbolList, true);
         lex.setPrintToken(traceOn);
-        anyErrors = false;
+        anyErrors = false;        
+    }
+
+    public QuadTable getQuadTable(){
+        return quads;
+    }
+    public SymbolTable getSymbolTable(){
+        return symbolList;
+    }
+
+    // genSymbolChar is defined as a '@', and genSymbolCount is a SymbolTable integer initialized to 0 in the constructor
+    // Creates a new symbol with identifiable unique name, not legal variable 
+    public int GenSymbol() {
+        String name = genSymbolChar + Integer.toString(symbolList.genSymbolCount);
+        symbolList.genSymbolCount++;
+        return symbolList.AddSymbol(name, 'V', 0);
     }
 
 //The interface to the syntax analyzer, initiates parsing
 // Uses variable RECUR to get return values throughout the non-terminal methods    
-    public void parse() {
+    public void parse() throws IOException {
+//         int recur = 0;
+// // prime the pump
+//         token = lex.GetNextToken();
+// // call PROGRAM
+//         recur = Program();
+
+        // make filename pattern for symbol table and quad table output later
+        String filenameBase = filein.substring(0, filein.length() - 4);
+        System.out.println(filenameBase);
         int recur = 0;
-// prime the pump
+        // prime the pump, get first token
         token = lex.GetNextToken();
-// call PROGRAM
+        // call PROGRAM
         recur = Program();
+        // done, so add the final STOP quad
+        quads.AddQuad(0, 0, 0, 0);
+
+        System.out.println("-------FINISHED PARSING\nOUTPUTING FILES...");
+        //print ST, QUAD before execute
+        symbolList.PrintSymbolTable(filenameBase + "ST-before.txt");
+        quads.PrintQuadTable(filenameBase + "QUADS.txt");
+        //interpret
+        if (!anyErrors) {
+            System.out.println("--------STARTING INTERPRETER-------");
+            //interp.InterpretQuads(quads, symbolList, false, filenameBase + "TRACE.txt");
+        } else {
+            System.out.println("Errors, unable to run program.");
+        }
+        symbolList.PrintSymbolTable(filenameBase + "ST-after.txt");
     }
 
 //Non Terminal     
@@ -162,7 +221,46 @@ public class Syntactic {
         return recur;
     }
 
-// NT This is dummied in to only work for an identifier.  MUST BE 
+    private int handleWriteln() {
+        int recur = 0;
+        int toprint = 0;
+        if (anyErrors) {
+            return -1;
+        }
+        trace("handleWriteln", true);
+        
+        //got here from a WRITELN token, move past it...
+        token = lex.GetNextToken();
+        //look for ( stringconst, ident, simpleexp )
+        if (token.code == lex.codeFor("LPAR_")) {
+            //move on
+            token = lex.GetNextToken();
+            if ((token.code == lex.codeFor("SCNST"))) { //|| (token.code == lex.codeFor("IDNT"))) {
+                // save index for string literal or identifier
+                toprint = symbolList.LookupSymbol(token.lexeme);
+                //move on
+                token = lex.GetNextToken();
+            } else {
+                toprint = SimpleExpression();
+            }
+            quads.AddQuad(6/*interp.opcodeFor("PRINT")*/, toprint, 0, 0);
+            //now need right ")"
+            if (token.code == lex.codeFor("RPAR_")) {
+                //move on
+                token = lex.GetNextToken();
+            } else {
+            error(lex.reserveFor("RPAR_"), token.lexeme);
+            }
+        } 
+        else {
+            error(lex.reserveFor("LPAR_"), token.lexeme);
+        }
+        // end lpar group
+        trace("handleWriteln", false);
+        return recur;
+    }
+
+/* NT This is dummied in to only work for an identifier.  MUST BE 
 //  COMPLETED TO IMPLEMENT CFG <simple expression>
     // private int SimpleExpression() {
     //     int recur = 0;
@@ -177,49 +275,175 @@ public class Syntactic {
     //     trace("SimpleExpression", false);
     //     return recur;
     // }
+    */
     
+
+    /*
+    PSEUDOCODE FOR SIMPLE EXPRESSION
+    int simpleexpression{
+        int left, right, signval, temp, opcode;
+        signval = sign; //returns -1 if neg, otherwise 1
+        left = term;
+        if (signval == -1) //Add a negation quad to flip sign
+            Quads.addQuad(MULOPCODE,left,Minus1Index,left);
+        //This is adding terms together as they are found, adding Quads 
+        while (plusorminus(tokenCode){ //is + or -
+            if (tokenCode==PLUS) opcode = ADDOPCODE;
+            else opcode = SUBOPCODE;
+            GNT; //move ahead
+            right = term; // index of term result
+            temp = GenSymbol; //index of new temp variable
+            Quads.addQuad(opcode,left,right,temp);
+            left = temp; //new leftmost term is last result
+        }
+        return(left);
+    }
+    */
+
     // <simple expression> -> [<sign>]  <term>  {<addop>  <term>}*
     private int SimpleExpression() {
         int recur = 0;
+        int left, right, signval, temp, opcode;
         if (anyErrors) {
             return -1;
         }
 
         trace("SimpleExpression", true);
 
-        // [<sign>]
-        if (token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")) {
-            recur = Sign();
-            token = lex.GetNextToken();
+        signval = Sign(); //returns -1 if neg, otherwise 1
+        left = Term();
+        if (signval == -1){ //Add a negation quad to flip sign
+            quads.AddQuad(2/*MULTI*/, left, Minus1Index, left);
         }
+      //This is adding terms together as they are found, adding Quads 
+        while (token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")){ //is + or -
+            if (token.code == lex.codeFor("PLUS_")){
+                opcode = lex.codeFor("PLUS_");
+            }
+            else { 
+                opcode = lex.codeFor("MINUS");
+            }
+                token = lex.GetNextToken(); //move ahead
+            right = Term(); // index of term result
+            temp = GenSymbol(); //index of new temp variable
+            quads.AddQuad(lex.codeFor("MULTI"), right, 0, left);
+            left = temp; //new leftmost term is last result
+        }
+        //return(left);
+        recur = left;
+
+        /* // [<sign>]
+        // if (token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")) {
+        //     recur = Sign();
+        //     token = lex.GetNextToken();
+        // }
         
-        // <term>
-        recur = Term();
+        // // <term>
+        // recur = Term();
             
-        //{<addop>  <term>}*
-        while(token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")){
-            recur = AddOp();
-            token = lex.GetNextToken();
-            recur = Term();
-        }
+        // //{<addop>  <term>}*
+        // while(token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")){
+        //     recur = AddOp();
+        //     token = lex.GetNextToken();
+        //     recur = Term();
+        // }
+        */
 
         trace("SimpleExpression", false);
         return recur;
     }
 
+/*
+PSEUDO CODE FOR STATEMENT
+int statement() { int left, right;
+    if (tokenCode==IDENT_){ //ident, 50, is present; call <variable>
+        left = variable; //returns variable ST index, advances
+        if (tokenCode==ASGN_){ //assignment op found 
+            GNT; //move ahead to start of expression
+            right = simpleexpression; //get result index
+            Quads.AddQuad(MovCode,right,0,left);
+        }
+        else{
+            errorexpect(tokenCode,ASGN_); //display error
+        }
+    }
+    else{
+        ... //do other <statement> possibilities checks
+    }
+}
+*/
+
 //Non Terminal
 //<statement>-> <variable> $COLON-EQUALS <simple expression>  
     private int Statement() {
         int recur = 0;
+        int saveTop;
+        int branchQuad;
+        int patchElse;
         if (anyErrors) {
             return -1;
         }
 
+        int left, right;
+
         trace("Statement", true);
 
         if (token.code == lex.codeFor("IDENT")) {  //must be an ASSUGNMENT
-            recur = handleAssignment();
-        } else {
+            left = Variable(); //returns variable ST index, advances
+            if(token.code == lex.codeFor("ASIGN")){
+                token = lex.GetNextToken();
+                right = SimpleExpression();
+                quads.AddQuad(5/*MOV*/, right, 0, left);
+                //recur = handleAssignment();
+            }
+        }
+        else if(token.code == lex.codeFor("IF___")){//must be an ASSUGNMENT
+            // this would handle the rest of the IF statment IN PART B
+            token = lex.GetNextToken(); // move past ‘if’
+            branchQuad = relExpression();//tells where branchTarget to be set 
+                                        // to jump around TRUE part
+
+            if(token.code == lex.codeFor("THEN_")){ //all ok, continue
+                token = lex.GetNextToken(); // move past ‘then’
+                recur = Statement(); //all if body quads are genned
+                if (token.code == lex.codeFor("ELSE_")){ //have to jump around to ??
+                    token = lex.GetNextToken(); // move past ELSE
+                    patchElse = quads.NextQuad(); //save backfill quad to jump around
+                                                 // ELSE body, target is unknown now
+                    quads.AddQuad(8 /*BR*/, 0, 0, 0); //backfill the FALSE IF branch jump 
+                    quads.setQuadOp3(branchQuad,quads.NextQuad()); //conditional jump 
+                    recur = Statement(); // gen ELSE body quads
+                              // fill in end of ELSE part
+                    quads.setQuadOp3(patchElse, quads.NextQuad());
+                }
+                else { //no ELSE encountered, fix IF branch
+                    quads.setQuadOp3(branchQuad, quads.NextQuad());
+                }
+            }//if the THEN was found
+            else{// error, no THEN
+                error("THEN", token.lexeme);
+
+            }
+        }// end of IF statement stuff
+
+        else if(token.code == lex.codeFor("WHILE")){
+            token = lex.GetNextToken();
+            saveTop = quads.NextQuad();
+            branchQuad = relExpression();
+            if(token.code == lex.codeFor("DO___")){
+                token = lex.GetNextToken();
+                quads.AddQuad(8 /*BR*/, 0, 0, saveTop);
+                quads.setQuadOp3(branchQuad, quads.NextQuad());
+            }
+            else{
+                error("DO", token.lexeme);
+            }
+
+        }
+        else if(token.code == lex.codeFor("WRTLN")){
+            recur = handleWriteln();
+        }
+        else {
             if (token.code == lex.codeFor("IF___")) {  //must be an ASSUGNMENT
                 // this would handle the rest of the IF statment IN PART B
             } else // if/elses should look for the other possible statement starts...  
@@ -233,27 +457,109 @@ public class Syntactic {
         return recur;
     }
 
+    /*
+    PSEUDOCODE FOR VARIABLE
+    int variable(){ 
+        int result= -1;
+        result = identifier; //identifier call returns ST index.
+                            //Does not call GNT, so token
+                            // can be inspected here!
+        if (token.tokenCode==IDENT_){ //Do type check if needed- not label,
+                                    // and not program name or string?
+                                    // TYPECHECK for integer or float
+                                    //  would go here if needed
+            GNT; //move ahead
+        }
+        else{
+            //here, it was not an ident as expected, so throw error
+        }
+        return(result); //result is the SymbolTable index of the ident.
+    }
+    */
+
     // <variable> -> <identifier> 
-    private int Variable(){
+
+    private int Variable() {
         int recur = 0;
         if (anyErrors) {
             return -1;
         }
-
         trace("Variable", true);
 
-        // <identifier>
-        if(token.code == lex.codeFor("IDENT")){
-            recur = Identifier();
+        if (token.code == lex.codeFor("IDENT")) {
+            //return the location of this variable for Quad use
+            recur = symbolList.LookupSymbol(token.lexeme);
+            // bookkeeping and move on
+            token = lex.GetNextToken();
         } else {
-            error("variable start", token.lexeme);
+            error("Variable", token.lexeme);
         }
-
-        token = lex.GetNextToken();
 
         trace("Variable", false);
         return recur;
     }
+
+    // <relexpression> -> <simple expression>  <relop>  <simple expression>
+    private int relExpression(){
+        int left, right, saveRelop, result, temp;
+        left = SimpleExpression(); //get the left operand, our ‘A’
+        saveRelop = RelOp(); //returns tokenCode of rel operator
+        right = SimpleExpression(); //right operand, our ‘B’
+        temp = GenSymbol();        //Create temp var in symbol table
+        quads.AddQuad(3, left, right, temp); // compare
+        result = quads.NextQuad(); //Save Q index where branch will be
+        quads.AddQuad(relopToOpcode(saveRelop),temp,0,0); // target set later
+        return(result);
+    }
+
+    /* old Variable
+    // private int Variable(){
+    //     int recur = 0;
+    //     if (anyErrors) {
+    //         return -1;
+    //     }
+
+    //     trace("Variable", true);
+
+    //     recur = Identifier();
+
+    //     // <identifier>
+    //     if(token.code == lex.codeFor("IDENT")){
+    //         //recur = Identifier();
+    //         token = lex.GetNextToken(); // advances
+    //     } else {
+    //         error("variable start", token.lexeme);
+    //     }
+
+    //     //token = lex.GetNextToken(); // advances
+
+    //     trace("Variable", false);
+    //     return recur;
+    // }
+    */
+    
+    // <relop> -> $EQ | $LSS | $GTR | $NEQ | $LEQ | $GEQ
+
+    private int RelOp(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+        trace("Variable", true);
+
+        if (token.code == lex.codeFor("EQLS_")) {
+            //return the location of this variable for Quad use
+            recur = symbolList.LookupSymbol(token.lexeme);
+            // bookkeeping and move on
+            token = lex.GetNextToken();
+        } else {
+            error("Variable", token.lexeme);
+        }
+
+        trace("Variable", false);
+        return recur;
+    }
+    
 
     // <addop> -> $PLUS | $MINUS
     private int AddOp(){
@@ -279,7 +585,47 @@ public class Syntactic {
         trace("AddOp", false);
         return recur;
     }
+
+    private int relopToOpcode(int relop) {
+         int result = 0;
+    //     switch (relop) {
+    //         case EQLS_:
+    //             result = interp.opcodeFor("BNZ");
+    //             break;
+    //         case NTEQL:
+    //             result = interp.opcodeFor("BZ");
+    //             break;
+    //         case LESS_:
+    //             result = interp.opcodeFor("BNN");
+    //             break;
+    //         case GRTR_:
+    //             result = interp.opcodeFor("BNP");
+    //             break;
+    //         case GRTEQ:
+    //             result = interp.opcodeFor("BN");
+    //             break;
+    //         case LESEQ:
+    //             result = interp.opcodeFor("BP");
+    //             break;
+    //         default:
+    //             result = 0;
+    //     }
+         return result;
+    }
     
+    /*
+    PSEUDOCODE FOR SIGN
+    int sign(){
+        int result=1; //only move ahead if + or - found; optional sign
+        if (tokenCode==MINUS){
+            result = -1;
+            GNT;
+        }
+        else if (tokenCode==PLUS)
+            GNT;
+        return(result);
+    }
+    */
     // <sign> -> $PLUS | $MINUS
     private int Sign(){
         int recur = 0;
@@ -289,17 +635,24 @@ public class Syntactic {
 
         trace("Sign", true);
 
-        // $PLUS
-        if(token.code == lex.codeFor("PLUS_")){
-            // terminal stuff (probably in code generation part)
-        }
-        // $MINUS
-        else if(token.code == lex.codeFor("MINUS")){
-            // terminal stuff (probably in code generation part)
+        if(token.code == lex.codeFor("MINUS")){
+            recur = -1;
         }
         else {
-            error("Sign", token.lexeme);
+            recur = 1;
         }
+
+        // // $PLUS
+        // if(token.code == lex.codeFor("PLUS_")){
+        //     // terminal stuff (probably in code generation part)
+        // }
+        // // $MINUS
+        // else if(token.code == lex.codeFor("MINUS")){
+        //     // terminal stuff (probably in code generation part)
+        // }
+        // else {
+        //     error("Sign", token.lexeme);
+        // }
 
         trace("Sign", false);
         return recur;
@@ -316,14 +669,14 @@ public class Syntactic {
 
         // <factor> 
         recur = Factor();
-        token = lex.GetNextToken();
+        //token = lex.GetNextToken();
 
         // { <mulop> <factor> }*
         while(token.code == lex.codeFor("MULTI") || token.code == lex.codeFor("DIVID")){
                 recur = MulOp();
                 token = lex.GetNextToken();
                 recur = Factor();
-                token = lex.GetNextToken();
+               // token = lex.GetNextToken();
         }
 
         trace("Term", false);
@@ -341,11 +694,11 @@ public class Syntactic {
 
         // $MULTIPLY
         if(token.code == lex.codeFor("MULTI")){
-            // terminal stuff (probably in code generation part)
+            recur = 2; // Multi OP
         }
         // $DIVIDE
         else if(token.code == lex.codeFor("DIVID")){
-            // terminal stuff (probably in code generation part)
+            recur = 1; // Divide OP;
         }
         else {
             error("MulOp", token.lexeme);
@@ -368,10 +721,12 @@ public class Syntactic {
 
         trace("Factor", true);
         if(token.code == lex.codeFor("ICNST") || token.code == lex.codeFor("FCNST")){
-            recur = UConst();
+            recur = UnsignedConstant();
+            //token = lex.GetNextToken();
         }
         else if(token.code == lex.codeFor("IDENT")){
             recur = Identifier();
+            //token = lex.GetNextToken();
         }
         // $LPAR
         else if(token.code == lex.codeFor("LPAR_")){
@@ -382,7 +737,7 @@ public class Syntactic {
             //token = lex.GetNextToken();
             // $RPAR
             if(token.code == lex.codeFor("RPAR_")){
-                // token = lex.GetNextToken();
+                token = lex.GetNextToken();
             }
             else{
                 error("RPAR", token.lexeme);
@@ -396,55 +751,88 @@ public class Syntactic {
     } 
 
     // <unsigned constant> -> <unsigned number>
-    private int UConst(){
+    private int UnsignedConstant() {
         int recur = 0;
         if (anyErrors) {
             return -1;
         }
+        trace("UnsignedConstant", true);
 
-        trace("UConst", true);
+        // only accepting a number
+        recur = UnsignedNumber();
 
-        // <unsigned constant>
-        if(token.code == lex.codeFor("ICNST")){
-            // <unsigned number>
-            recur = UNumber();
-        }
-        // <unsigned constant>
-        else if(token.code == lex.codeFor("FCNST")){
-            // <unsigned number>
-            recur = UNumber();
-        }
-        else{
-            error("Uconst", token.lexeme);
-        }
-        trace("UConst", false);
+        trace("UnsignedConstant", false);
         return recur;
-    } 
+    }
 
-    // <unsigned number>-> $FLOAT | $INTEGER
-    private int UNumber(){
+    // OLD UConst
+    // private int UConst(){
+    //     int recur = 0;
+    //     if (anyErrors) {
+    //         return -1;
+    //     }
+
+    //     trace("UConst", true);
+
+    //     // <unsigned constant>
+    //     if(token.code == lex.codeFor("ICNST")){
+    //         // <unsigned number>
+    //         recur = UNumber();
+    //     }
+    //     // <unsigned constant>
+    //     else if(token.code == lex.codeFor("FCNST")){
+    //         // <unsigned number>
+    //         recur = UNumber();
+    //     }
+    //     else{
+    //         error("Uconst", token.lexeme);
+    //     }
+    //     trace("UConst", false);
+    //     return recur;
+    // } 
+
+    // <unsigned number>-> $INTEGER
+    private int UnsignedNumber() {
         int recur = 0;
         if (anyErrors) {
-            return -1;
+        return -1;
+        }
+        trace("UnsignedNumber", true);
+        
+        // float or int or ERROR
+        // unsigned constant starts with integer or float number
+        if ((token.code == lex.codeFor("ICNST") || (token.code == lex.codeFor("FCNST")))) {
+            // return the s.t. index
+            recur = symbolList.LookupSymbol(token.lexeme);
+            token = lex.GetNextToken();
+        } else {
+            error("Integer or Floating Point Number", token.lexeme);
         }
 
-        trace("UNumber", true);
-
-        // $FLOAT
-        if(token.code == lex.codeFor("FCNST")){
-
-        }
-        // $INTEGER
-        else if(token.code == lex.codeFor("ICNST")) {
-
-        }
-        else{
-            error("UNumber", token.lexeme);
-        }
-
-        trace("UNumber", false);
+        trace("UnsignedNumber", false);
         return recur;
-    } 
+    }
+
+    // OLD UNumber
+    // private int UNumber(){
+    //     int recur = 0;
+    //     if (anyErrors) {
+    //         return -1;
+    //     }
+
+    //     trace("UNumber", true);
+    //     // $INTEGER
+    //     if(token.code == lex.codeFor("ICNST")) {
+    //         // @TODO something here'
+    //         recur = 51; // Token code 51
+    //     }
+    //     else{
+    //         error("UNumber", token.lexeme);
+    //     }
+
+    //     trace("UNumber", false);
+    //     return recur;
+    // } 
 
     // <identifier> -> $IDENTIFIER
     private int Identifier(){
@@ -454,8 +842,25 @@ public class Syntactic {
         }
 
         trace("Identifier", true);
-    // I assume for the next part for code generation, 
-    // stuff will go here.
+
+        recur = symbolList.getCurrentIndex(); // Token code 50
+        //**note: <letter>  {<letter> |<digit> | $ | - }*
+        //symbolList.AddSymbol(token.lexeme, kind, value)
+        
+        token = lex.GetNextToken();
+        trace("Identifier", false);
+        return recur;
+    }
+
+    // <stringconst> -> $STRINGTYPE
+    private int StringConstant(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
+        }
+
+        trace("Identifier", true);
+        recur = 53; // Token code 53
         trace("Identifier", false);
         return recur;
     }

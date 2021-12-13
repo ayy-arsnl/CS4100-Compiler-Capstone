@@ -13,11 +13,17 @@ public class SymbolTable {
     private int maxSize;
     private SymbolTableEntry[] symbolTable;
     private int currentIndex;
+    public int genSymbolCount;
 
     // Constructor for SymbolTable
     public SymbolTable(int maxSize){
         this.maxSize = maxSize;
         this.symbolTable = new SymbolTableEntry[this.maxSize];
+        genSymbolCount = 0;
+    }
+
+    public int getCurrentIndex(){
+        return currentIndex;
     }
 
     // Adds new symbol table entry with int value
@@ -123,7 +129,8 @@ public class SymbolTable {
                 val = this.symbolTable[i].value_s;
             }
 
-            String strOut = "%-7s %-8s %-8s %-8s %-8s\n";
+            //String strOut = "%-7s %-8s %-8s %-8s %-8s\n";
+            String strOut = "%s | %s | %s | %s | %s\n";
             String out = String.format(strOut, i, smbl, knd, data_type, val);
             try {
                 writer.write(out);

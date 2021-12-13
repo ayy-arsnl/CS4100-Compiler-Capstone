@@ -1,0 +1,58 @@
+ant -f D:\\JavaProj\\Project5 -Dnb.internal.action.name=run run
+init:
+Deleting: D:\JavaProj\Project5\build\built-jar.properties
+deps-jar:
+Updating property file: D:\JavaProj\Project5\build\built-jar.properties
+compile:
+run:
+Parsing d:\CodeGenFULL-FA21.txt
+0001 module Codegen;
+d:\CodeGenFULL-FA21
+0002 begin
+0003 writeln("FULL TEST File for <ENTER YOUR STUDENT FULL NAME HERE>");
+0004 
+0005 factorial := 1;
+0006 n := 5;
+0007 count := 1;
+0008 while count <= n do
+0009   begin
+0010   factorial := factorial*count;
+0011   count := count + 1
+0012   end;
+0013 writeln("The calculation of 5! is:");
+0014 writeln(factorial);
+0015 writeln(" ");
+0016 
+0017 {count should be 6 at this point}
+0018 while count > 1 do
+0019   begin
+0020   writeln(count);
+0021   if count - 2 > 2 then
+0022     writeln("Count - 2 is greater than 0")
+0023   else
+0024     writeln("Count - 2 is less than or equal to 0");
+0025   count := count -1
+0026   end;
+0027 writeln(" ");
+0028 writeln("All done.")
+0029 end. 
+Success.
+FULL TEST File for <ENTER YOUR STUDENT FULL NAME HERE>
+The calculation of 5! is:
+120
+ 
+6
+Count - 2 is greater than 0
+5
+Count - 2 is greater than 0
+4
+Count - 2 is less than or equal to 0
+3
+Count - 2 is less than or equal to 0
+2
+Count - 2 is less than or equal to 0
+ 
+All done.
+Execution terminated by program STOP.
+Done.
+BUILD SUCCESSFUL (total time: 0 seconds)

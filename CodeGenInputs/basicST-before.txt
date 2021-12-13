@@ -1,0 +1,7 @@
+INDEX | SYMBOL | KIND | DTYPE | VALUE 
+-----------------------
+0 | -1 | C | I | -1
+1 | 1 | C | I | 1
+2 | CodegenBASIC | p | I | 0
+3 | a | v | I | 0
+4 | 2 | c | I | 2

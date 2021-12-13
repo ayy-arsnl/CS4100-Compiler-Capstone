@@ -1,5 +1,8 @@
 import ADT.SymbolTable;
 import ADT.Lexical;
+
+import java.io.IOException;
+
 import ADT.*;
 
 /**
@@ -8,7 +11,7 @@ import ADT.*;
  */
 public class mainP3A {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         // Laptop: /home/alexander/Documents/UCCS/cs4100/CS4100-Compiler-Capstone/
         // Desktop: /home/alexander/Documents/UCCS/Fall 2021/CS4100/CS4100 Compiler Capstone/
