@@ -1,0 +1,23 @@
+INDEX | SYMBOL | KIND | DTYPE | VALUE 
+-----------------------
+0 | -1 | C | I | -1
+1 | 1 | C | I | 1
+2 | Codegen | p | I | 0
+3 | FULL TEST File for <ENTER YOUR STUDENT FULL NAME HERE> | c | S | FULL TEST File for <ENTER YOUR STUDENT FULL NAME HERE>
+4 | factorial | v | I | 0
+5 | 1 | c | I | 1
+6 | n | v | I | 0
+7 | 5 | c | I | 5
+8 | count | v | I | 0
+9 | 1 | c | I | 1
+10 | count | v | I | 0
+11 | n | v | I | 0
+12 | @0 | V | I | 0
+13 | factorial | v | I | 0
+14 | factorial | v | I | 0
+15 | count | v | I | 0
+16 | @1 | V | I | 0
+17 | count | v | I | 0
+18 | count | v | I | 0
+19 | 1 | c | I | 1
+20 | @2 | V | I | 0

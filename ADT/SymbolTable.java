@@ -27,25 +27,37 @@ public class SymbolTable {
     // Adds new symbol table entry with int value
     public int AddSymbol(String symbol, char kind, int value){
         SymbolTableEntry newEntry = new SymbolTableEntry(symbol, kind, value);
-        this.symbolTable[currentIndex] = newEntry;
-        this.currentIndex++;
-        return this.currentIndex;
+        if(LookupSymbol(newEntry.symbol) == -1){ // No pre-existing symbol found
+            this.symbolTable[currentIndex] = newEntry;
+            this.currentIndex++;
+            return this.currentIndex;
+        }else{ // pre-existing symbol found, don't add new symbol
+            return this.currentIndex;
+        }
     }
 
     // Adds new symbol table entry with float value
     public int AddSymbol(String symbol, char kind, double value){
         SymbolTableEntry newEntry = new SymbolTableEntry(symbol, kind, value);
-        this.symbolTable[currentIndex] = newEntry;
-        this.currentIndex++;
-        return this.currentIndex;
+        if(LookupSymbol(newEntry.symbol) == -1){ // No pre-existing symbol found
+            this.symbolTable[currentIndex] = newEntry;
+            this.currentIndex++;
+            return this.currentIndex;
+        }else{ // pre-existing symbol found, don't add new symbol
+            return this.currentIndex;
+        }
     }
 
     // Adds new symbol table entry with string value
     public int AddSymbol(String symbol, char kind, String value){
         SymbolTableEntry newEntry = new SymbolTableEntry(symbol, kind, value);
-        this.symbolTable[currentIndex] = newEntry;
-        this.currentIndex++;
-        return this.currentIndex;
+        if(LookupSymbol(newEntry.symbol) == -1){ // No pre-existing symbol found
+            this.symbolTable[currentIndex] = newEntry;
+            this.currentIndex++;
+            return this.currentIndex;
+        }else{ // pre-existing symbol found, don't add new symbol
+            return this.currentIndex;
+        }
     }
 
     // Iterates through the symbol table checking for specified symbol and returns its

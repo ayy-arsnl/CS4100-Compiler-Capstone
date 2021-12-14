@@ -186,7 +186,17 @@ public class Syntactic {
             while ((token.code == lex.codeFor("SEMIC")) && (!lex.EOF()) && (!anyErrors)) {
                 token = lex.GetNextToken();
                 recur = Statement();
+                if(token.code == lex.codeFor("BEGIN")){
+                    recur = Block();
+                    if(token.code == lex.codeFor("SEMIC")){
+                        //token = lex.GetNextToken();
+                    }
+                    else{
+                        error(lex.reserveFor("SEMIC"), token.lexeme);    
+                    }
+                }
             }
+            
             if (token.code == lex.codeFor("END__")) {
                 token = lex.GetNextToken();
             } else {
@@ -414,35 +424,33 @@ int statement() { int left, right;
                     patchElse = quads.NextQuad(); //save backfill quad to jump around
                                                  // ELSE body, target is unknown now
                     quads.AddQuad(8 /*BR*/, 0, 0, 0); //backfill the FALSE IF branch jump 
-                    quads.setQuadOp3(branchQuad,quads.NextQuad()); //conditional jump 
+                    //quads.setQuadOp3(branchQuad, quads.NextQuad()); //conditional jump 
                     recur = Statement(); // gen ELSE body quads
                               // fill in end of ELSE part
-                    quads.setQuadOp3(patchElse, quads.NextQuad());
+                    //quads.setQuadOp3(patchElse, quads.NextQuad());
                 }
                 else { //no ELSE encountered, fix IF branch
-                    quads.setQuadOp3(branchQuad, quads.NextQuad());
+                    //quads.setQuadOp3(branchQuad, quads.NextQuad());
                 }
             }//if the THEN was found
             else{// error, no THEN
                 error("THEN", token.lexeme);
-
             }
         }// end of IF statement stuff
+        else if(token.code == lex.codeFor("WHILE")){
+            token = lex.GetNextToken();
+            saveTop = quads.NextQuad();
+            branchQuad = relExpression();
+            if(token.code == lex.codeFor("DO___")){
+                token = lex.GetNextToken();
+                quads.AddQuad(8 /*BR*/, 0, 0, saveTop);
+                //quads.setQuadOp3(branchQuad, quads.NextQuad());
+            }
+            else{
+                error("DO", token.lexeme);
+            }
 
-        // else if(token.code == lex.codeFor("WHILE")){
-        //     token = lex.GetNextToken();
-        //     saveTop = quads.NextQuad();
-        //     branchQuad = relExpression();
-        //     if(token.code == lex.codeFor("DO___")){
-        //         token = lex.GetNextToken();
-        //         quads.AddQuad(8 /*BR*/, 0, 0, saveTop);
-        //         quads.setQuadOp3(branchQuad, quads.NextQuad());
-        //     }
-        //     else{
-        //         error("DO", token.lexeme);
-        //     }
-
-        // }
+        }
         else if(token.code == lex.codeFor("WRTLN")){
             recur = handleWriteln();
         }
@@ -816,66 +824,93 @@ int statement() { int left, right;
         return recur;
     }
 
-        // <relop> -> $EQ | $LSS | $GTR | $NEQ | $LEQ | $GEQ
-        private int RelOp(){
-            int recur = 0;
-            if (anyErrors) {
-                return -1;
-            }
-            trace("Relop", true);
-    
-            if (token.code == lex.codeFor("EQLS_")) {
-                //return the location of this variable for Quad use
-                recur = symbolList.LookupSymbol(token.lexeme);
-                // bookkeeping and move on
-                token = lex.GetNextToken();
-            } else {
-                error("Relop", token.lexeme);
-            }
-    
-            trace("Relop", false);
-            return recur;
+    // <relop> -> $EQ | $LSS | $GTR | $NEQ | $LEQ | $GEQ
+    private int RelOp(){
+        int recur = 0;
+        if (anyErrors) {
+            return -1;
         }
-    
-        // <relexpression> -> <simple expression>  <relop>  <simple expression>
-        private int relExpression(){
-            int left, right, saveRelop, result, temp;
-            left = SimpleExpression(); //get the left operand, our ‘A’
-            saveRelop = RelOp(); //returns tokenCode of rel operator
-            right = SimpleExpression(); //right operand, our ‘B’
-            temp = GenSymbol();        //Create temp var in symbol table
-            quads.AddQuad(3, left, right, temp); // compare
-            result = quads.NextQuad(); //Save Q index where branch will be
-            quads.AddQuad(relopToOpcode(saveRelop),temp,0,0); // target set later
-            return result;
+        trace("Relop", true);
+
+        if (token.code == lex.codeFor("EQLS_")) { // 
+            // return the location of this variable for Quad use
+            recur = lex.codeFor("EQLS_");
+            // bookkeeping and move on
+            token = lex.GetNextToken();
         }
-    
-        private int relopToOpcode(int relop) {
-            int opcode = 0;
-            switch (relop) {
-                case 42: // EQLS_
-                    opcode = 13; // BNZ;
-                    break;
-                case 43: // NTEQL
-                    opcode = 10; // BZ
-                    break;
-                case 32: // LESS_
-                    opcode = 15; // BNN
-                    break;
-                case 38: // GRTR_
-                    opcode = 14; // BNP
-                    break;
-                case 40: // GRTEQ
-                    opcode = 12; // BN
-                    break;
-                case 41: // LESEQ
-                    opcode = 11; // BP
-                    break;
-                default: //
-                    opcode = 0;
-            }
-            return opcode;
+        else if(token.code == lex.codeFor("LESS_")){
+            recur = lex.codeFor("EQLS_");
+            // bookkeeping and move on
+            token = lex.GetNextToken();
         }
+        else if(token.code == lex.codeFor("GRTR_")){
+            recur = lex.codeFor("GRTR_");
+            // bookkeeping and move on
+            token = lex.GetNextToken();
+        } 
+        else if(token.code == lex.codeFor("NTEQL")){
+            recur = lex.codeFor("NTEQL");
+            // bookkeeping and move on
+            token = lex.GetNextToken();
+        } 
+        else if(token.code == lex.codeFor("LESEQ")){
+            recur = lex.codeFor("LESEQ");
+            // bookkeeping and move on
+            token = lex.GetNextToken();
+        } 
+        else if(token.code == lex.codeFor("GRTEQ")){
+            recur = lex.codeFor("GRTEQ");
+            // bookkeeping and move on
+            token = lex.GetNextToken();
+        } 
+         
+        else {
+            error("Relop", token.lexeme);
+        }
+
+        trace("Relop", false);
+        return recur;
+    }
+    
+        // <relexpression> -> <simple expression> <relop> <simple expression>
+    private int relExpression() {
+        int left, right, saveRelop, result, temp;
+        left = SimpleExpression(); // get the left operand, our ‘A’
+        saveRelop = RelOp(); // returns tokenCode of rel operator
+        right = SimpleExpression(); // right operand, our ‘B’
+        temp = GenSymbol(); // Create temp var in symbol table
+        quads.AddQuad(3, left, right, temp); // compare
+        result = quads.NextQuad(); // Save Q index where branch will be
+        quads.AddQuad(relopToOpcode(saveRelop), temp, 0, 0); // target set later
+        return result;
+    }
+
+    private int relopToOpcode(int relop) {
+        int opcode = 0;
+        switch (relop) {
+            case 42: // EQLS_
+                opcode = 13; // BNZ;
+                break;
+            case 43: // NTEQL
+                opcode = 10; // BZ
+                break;
+            case 32: // LESS_
+                opcode = 15; // BNN
+                break;
+            case 38: // GRTR_
+                opcode = 14; // BNP
+                break;
+            case 40: // GRTEQ
+                opcode = 12; // BN
+                break;
+            case 41: // LESEQ
+                opcode = 11; // BP
+                break;
+            default: //
+                opcode = 0;
+        }
+        return opcode;
+    }
 
 /**
  * *************************************************

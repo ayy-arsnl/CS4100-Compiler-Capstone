@@ -1,6 +1,6 @@
 module Codegen;
 begin
-writeln("FULL TEST File for <ENTER YOUR STUDENT FULL NAME HERE>");
+writeln("FULL TEST File for <ALEXANDER URQUHART>");
 
 factorial := 1;
 n := 5;

@@ -9,22 +9,12 @@ INDEX | SYMBOL | KIND | DTYPE | VALUE
 6 | 2 | c | I | 2
 7 | b | v | I | 0
 8 | 3 | c | I | 3
-9 | a | v | I | 0
-10 | a | v | I | 0
-11 | 3 | c | I | 3
-12 | b | v | I | 0
-13 | @0 | V | I | 0
-14 | @1 | V | I | 0
-15 | a | v | I | 0
-16 | @2 | V | I | 0
-17 | 2 | c | I | 2
-18 | b | v | I | 0
-19 | @3 | V | I | 0
-20 | 2 | c | I | 2
-21 | @4 | V | I | 0
-22 | @5 | V | I | 0
-23 | 1 | c | I | 1
-24 | @6 | V | I | 0
-25 | a is now  | c | S | a is now 
-26 | a | v | I | 0
-27 | All done. | c | S | All done.
+9 | @0 | V | I | 0
+10 | @1 | V | I | 0
+11 | @2 | V | I | 0
+12 | @3 | V | I | 0
+13 | @4 | V | I | 0
+14 | @5 | V | I | 0
+15 | @6 | V | I | 0
+16 | a is now  | c | S | a is now 
+17 | All done. | c | S | All done.

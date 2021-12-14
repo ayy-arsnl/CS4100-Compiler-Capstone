@@ -200,6 +200,10 @@ public class Interpreter {
         }
     }
 
+    private void setQuadOp3(int current, int next){
+        
+    }
+
 
     // Prints info about the running instructions such as the PC, quad data, and operands 
     private String makeTraceString(int pc, int opcode, int op1, int op2, int op3){

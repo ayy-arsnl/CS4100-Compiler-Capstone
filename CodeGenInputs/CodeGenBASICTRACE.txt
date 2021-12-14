@@ -42,3 +42,13 @@ String printout:  Hello World
 a is now 
 16
 All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+16
+All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+16
+All done.
