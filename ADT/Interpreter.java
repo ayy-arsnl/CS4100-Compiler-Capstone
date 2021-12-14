@@ -123,8 +123,18 @@ public class Interpreter {
                         PC += 1;
                         break;
 
-                    case 6: // PRINT - Write symbol table name and value of op3 to StandardOutput (console)
-                        String result = "Result:" + S.GetInteger(op3);
+                    case 6: // PRINT - Write symbol table name and value of op1 to StandardOutput (console)
+                        String result = S.GetSymbol(op1);
+                        char kind = S.GetDataType(op1);
+                        if(kind == 'I'){
+                            result = String.format("%d", S.GetInteger(op1));
+                        }
+                        else if(kind == 'F'){
+                            result = String.format("%f", S.GetFloat(op1));
+                        }
+                        else{
+                            result = String.format("%s", S.GetString(op1));
+                        }
                         System.out.println(result);
                         traceStringToFile(result, filename);
                         PC += 1;

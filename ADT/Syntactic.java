@@ -51,6 +51,7 @@ public class Syntactic {
     private final int quadSize = 1500;
     //private int genSymbolCount;
     private final char genSymbolChar = '@';
+    private int genSymbolCount;
 
     private int Minus1Index;
     private int Plus1Index;
@@ -61,6 +62,7 @@ public class Syntactic {
         filein = filename;
         traceon = traceOn;
         symbolList = new SymbolTable(symbolSize);
+        genSymbolCount = 0;
         Minus1Index = symbolList.AddSymbol("-1", 'C', -1);
         Plus1Index = symbolList.AddSymbol("1", 'C', 1);
 
@@ -82,8 +84,8 @@ public class Syntactic {
     // genSymbolChar is defined as a '@', and genSymbolCount is a SymbolTable integer initialized to 0 in the constructor
     // Creates a new symbol with identifiable unique name, not legal variable 
     public int GenSymbol() {
-        String name = genSymbolChar + Integer.toString(symbolList.genSymbolCount);
-        symbolList.genSymbolCount++;
+        String name = genSymbolChar + Integer.toString(genSymbolCount);
+        genSymbolCount++;
         return symbolList.AddSymbol(name, 'V', 0);
     }
 
@@ -114,7 +116,7 @@ public class Syntactic {
         //interpret
         if (!anyErrors) {
             System.out.println("--------STARTING INTERPRETER-------");
-            //interp.InterpretQuads(quads, symbolList, false, filenameBase + "TRACE.txt");
+            interp.InterpretQuads(quads, symbolList, false, filenameBase + "TRACE.txt");
         } else {
             System.out.println("Errors, unable to run program.");
         }
@@ -318,15 +320,16 @@ public class Syntactic {
       //This is adding terms together as they are found, adding Quads 
         while (token.code == lex.codeFor("PLUS_") || token.code == lex.codeFor("MINUS")){ //is + or -
             if (token.code == lex.codeFor("PLUS_")){
-                opcode = lex.codeFor("PLUS_");
+                opcode = 4 /*ADD*/;
             }
             else { 
-                opcode = lex.codeFor("MINUS");
+                opcode = 3 /*SUB*/;
             }
-                token = lex.GetNextToken(); //move ahead
+            token = lex.GetNextToken(); //move ahead
             right = Term(); // index of term result
             temp = GenSymbol(); //index of new temp variable
-            quads.AddQuad(lex.codeFor("MULTI"), right, 0, left);
+            temp -=1 ;
+            quads.AddQuad(opcode, left, right, temp);
             left = temp; //new leftmost term is last result
         }
         //return(left);
@@ -426,20 +429,20 @@ int statement() { int left, right;
             }
         }// end of IF statement stuff
 
-        else if(token.code == lex.codeFor("WHILE")){
-            token = lex.GetNextToken();
-            saveTop = quads.NextQuad();
-            branchQuad = relExpression();
-            if(token.code == lex.codeFor("DO___")){
-                token = lex.GetNextToken();
-                quads.AddQuad(8 /*BR*/, 0, 0, saveTop);
-                quads.setQuadOp3(branchQuad, quads.NextQuad());
-            }
-            else{
-                error("DO", token.lexeme);
-            }
+        // else if(token.code == lex.codeFor("WHILE")){
+        //     token = lex.GetNextToken();
+        //     saveTop = quads.NextQuad();
+        //     branchQuad = relExpression();
+        //     if(token.code == lex.codeFor("DO___")){
+        //         token = lex.GetNextToken();
+        //         quads.AddQuad(8 /*BR*/, 0, 0, saveTop);
+        //         quads.setQuadOp3(branchQuad, quads.NextQuad());
+        //     }
+        //     else{
+        //         error("DO", token.lexeme);
+        //     }
 
-        }
+        // }
         else if(token.code == lex.codeFor("WRTLN")){
             recur = handleWriteln();
         }
@@ -486,9 +489,10 @@ int statement() { int left, right;
         }
         trace("Variable", true);
 
+        recur = Identifier();
         if (token.code == lex.codeFor("IDENT")) {
             //return the location of this variable for Quad use
-            recur = symbolList.LookupSymbol(token.lexeme);
+            //recur = symbolList.LookupSymbol(token.lexeme);
             // bookkeeping and move on
             token = lex.GetNextToken();
         } else {
@@ -497,19 +501,6 @@ int statement() { int left, right;
 
         trace("Variable", false);
         return recur;
-    }
-
-    // <relexpression> -> <simple expression>  <relop>  <simple expression>
-    private int relExpression(){
-        int left, right, saveRelop, result, temp;
-        left = SimpleExpression(); //get the left operand, our ‘A’
-        saveRelop = RelOp(); //returns tokenCode of rel operator
-        right = SimpleExpression(); //right operand, our ‘B’
-        temp = GenSymbol();        //Create temp var in symbol table
-        quads.AddQuad(3, left, right, temp); // compare
-        result = quads.NextQuad(); //Save Q index where branch will be
-        quads.AddQuad(relopToOpcode(saveRelop),temp,0,0); // target set later
-        return(result);
     }
 
     /* old Variable
@@ -538,29 +529,6 @@ int statement() { int left, right;
     // }
     */
     
-    // <relop> -> $EQ | $LSS | $GTR | $NEQ | $LEQ | $GEQ
-
-    private int RelOp(){
-        int recur = 0;
-        if (anyErrors) {
-            return -1;
-        }
-        trace("Variable", true);
-
-        if (token.code == lex.codeFor("EQLS_")) {
-            //return the location of this variable for Quad use
-            recur = symbolList.LookupSymbol(token.lexeme);
-            // bookkeeping and move on
-            token = lex.GetNextToken();
-        } else {
-            error("Variable", token.lexeme);
-        }
-
-        trace("Variable", false);
-        return recur;
-    }
-    
-
     // <addop> -> $PLUS | $MINUS
     private int AddOp(){
         int recur = 0;
@@ -572,11 +540,11 @@ int statement() { int left, right;
 
         // $PLUS
         if(token.code == lex.codeFor("PLUS_")){
-            // terminal stuff (probably in code generation part)
+            recur = 4;
         }
         // $MINUS
         else if(token.code == lex.codeFor("MINUS")){
-            // terminal stuff (probably in code generation part)
+            recur = 5;
         }
         else {
             error("AddOp", token.lexeme);
@@ -584,33 +552,6 @@ int statement() { int left, right;
 
         trace("AddOp", false);
         return recur;
-    }
-
-    private int relopToOpcode(int relop) {
-         int result = 0;
-    //     switch (relop) {
-    //         case EQLS_:
-    //             result = interp.opcodeFor("BNZ");
-    //             break;
-    //         case NTEQL:
-    //             result = interp.opcodeFor("BZ");
-    //             break;
-    //         case LESS_:
-    //             result = interp.opcodeFor("BNN");
-    //             break;
-    //         case GRTR_:
-    //             result = interp.opcodeFor("BNP");
-    //             break;
-    //         case GRTEQ:
-    //             result = interp.opcodeFor("BN");
-    //             break;
-    //         case LESEQ:
-    //             result = interp.opcodeFor("BP");
-    //             break;
-    //         default:
-    //             result = 0;
-    //     }
-         return result;
     }
     
     /*
@@ -660,7 +601,7 @@ int statement() { int left, right;
 
     // <term> -> <factor> {<mulop> <factor> }*
     private int Term(){
-        int recur = 0;
+        int left, right, temp, opcode;
         if (anyErrors) {
             return -1;
         }
@@ -668,19 +609,29 @@ int statement() { int left, right;
         trace("Term", true);
 
         // <factor> 
-        recur = Factor();
+        left = Factor();
         //token = lex.GetNextToken();
 
         // { <mulop> <factor> }*
         while(token.code == lex.codeFor("MULTI") || token.code == lex.codeFor("DIVID")){
-                recur = MulOp();
-                token = lex.GetNextToken();
-                recur = Factor();
+            if(token.code == lex.codeFor("MULTI")){
+                opcode = 2;//MulOp();
+            }
+            else{
+                opcode = 1;
+            }
+            
+            token = lex.GetNextToken();
+            right = Factor();
+            temp = GenSymbol();
+            temp -= 1;
+            quads.AddQuad(opcode, left, right, temp);
                // token = lex.GetNextToken();
+            left = temp;
         }
 
         trace("Term", false);
-        return recur;
+        return left;
     }
 
     // <mulop> -> $MULTIPLY | $DIVIDE
@@ -725,7 +676,7 @@ int statement() { int left, right;
             //token = lex.GetNextToken();
         }
         else if(token.code == lex.codeFor("IDENT")){
-            recur = Identifier();
+            recur = Variable();
             //token = lex.GetNextToken();
         }
         // $LPAR
@@ -836,20 +787,20 @@ int statement() { int left, right;
 
     // <identifier> -> $IDENTIFIER
     private int Identifier(){
-        int recur = 0;
+        int symbolLocation = 0;
         if (anyErrors) {
             return -1;
         }
 
         trace("Identifier", true);
 
-        recur = symbolList.getCurrentIndex(); // Token code 50
+        symbolLocation = symbolList.LookupSymbol(token.lexeme);
         //**note: <letter>  {<letter> |<digit> | $ | - }*
         //symbolList.AddSymbol(token.lexeme, kind, value)
         
-        token = lex.GetNextToken();
+        //token = lex.GetNextToken();
         trace("Identifier", false);
-        return recur;
+        return symbolLocation;
     }
 
     // <stringconst> -> $STRINGTYPE
@@ -864,6 +815,67 @@ int statement() { int left, right;
         trace("Identifier", false);
         return recur;
     }
+
+        // <relop> -> $EQ | $LSS | $GTR | $NEQ | $LEQ | $GEQ
+        private int RelOp(){
+            int recur = 0;
+            if (anyErrors) {
+                return -1;
+            }
+            trace("Relop", true);
+    
+            if (token.code == lex.codeFor("EQLS_")) {
+                //return the location of this variable for Quad use
+                recur = symbolList.LookupSymbol(token.lexeme);
+                // bookkeeping and move on
+                token = lex.GetNextToken();
+            } else {
+                error("Relop", token.lexeme);
+            }
+    
+            trace("Relop", false);
+            return recur;
+        }
+    
+        // <relexpression> -> <simple expression>  <relop>  <simple expression>
+        private int relExpression(){
+            int left, right, saveRelop, result, temp;
+            left = SimpleExpression(); //get the left operand, our ‘A’
+            saveRelop = RelOp(); //returns tokenCode of rel operator
+            right = SimpleExpression(); //right operand, our ‘B’
+            temp = GenSymbol();        //Create temp var in symbol table
+            quads.AddQuad(3, left, right, temp); // compare
+            result = quads.NextQuad(); //Save Q index where branch will be
+            quads.AddQuad(relopToOpcode(saveRelop),temp,0,0); // target set later
+            return result;
+        }
+    
+        private int relopToOpcode(int relop) {
+            int opcode = 0;
+            switch (relop) {
+                case 42: // EQLS_
+                    opcode = 13; // BNZ;
+                    break;
+                case 43: // NTEQL
+                    opcode = 10; // BZ
+                    break;
+                case 32: // LESS_
+                    opcode = 15; // BNN
+                    break;
+                case 38: // GRTR_
+                    opcode = 14; // BNP
+                    break;
+                case 40: // GRTEQ
+                    opcode = 12; // BN
+                    break;
+                case 41: // LESEQ
+                    opcode = 11; // BP
+                    break;
+                default: //
+                    opcode = 0;
+            }
+            return opcode;
+        }
 
 /**
  * *************************************************
@@ -926,5 +938,5 @@ private int exampleNonTerminal(){
 
 }  
     
-    */    
+    */
 }

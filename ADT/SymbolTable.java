@@ -13,13 +13,11 @@ public class SymbolTable {
     private int maxSize;
     private SymbolTableEntry[] symbolTable;
     private int currentIndex;
-    public int genSymbolCount;
 
     // Constructor for SymbolTable
     public SymbolTable(int maxSize){
         this.maxSize = maxSize;
         this.symbolTable = new SymbolTableEntry[this.maxSize];
-        genSymbolCount = 0;
     }
 
     public int getCurrentIndex(){

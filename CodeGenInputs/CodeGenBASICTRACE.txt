@@ -2,3 +2,43 @@ Result:-1
 Result:-1
 Result:-1
 Result:-1
+BASIC TEST File
+String printout:  Hello World
+a is now 
+a
+All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+a
+All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+a
+All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+a
+All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+a
+All done.
+BASIC TEST File
+String printout:  Hello World
+a is now 
+BASIC TEST File
+String printout:  Hello World
+a is now 
+17
+All done.
+BASIC TEST File
+String printout:  Hello World
+BASIC TEST File
+String printout:  Hello World
+a is now 
+16
+All done.
