@@ -1,38 +1,9 @@
-/*
-SAMPLE syntactic CODE FOR FALL 21 Compiler Class.
-See TEMPLATE at end of this file for the framework to be used for
-ALL non-terminal methods created.
-
-Two methods shown below are added to LEXICAL, where reserve and mnemonic
-tables are accessible:
- 
-public int codeFor(String mnemonic){
-    return mnemonics.LookupName(mnemonic);
-}
-public String reserveFor(String mnemonic){
-    return reserveWords.LookupCode(mnemonics.LookupName(mnemonic));
-}
-
-public void setPrintToken(boolean on){
-    printToken = on;
-}
-
-Add 2 lines which prints each token found by GetNextToken:
-            if (printToken) {
-                System.out.println("\t" + result.mnemonic + " | \t" + String.format("%04d", result.code) + " | \t" + result.lexeme);
-            }
-
- */
 package ADT;
 
 import java.io.IOException;
 
 import javax.print.event.PrintJobAttributeEvent;
 
-/**
- *
- * @author abrouill
- */
 public class Syntactic {
 
     private String filein;              //The full file path to input file
@@ -41,8 +12,6 @@ public class Syntactic {
     private QuadTable quads;
     private Lexical lex;                //Lexical analyzer 
     private Lexical.token token;        //Next Token retrieved 
-    // private ReserveTable reserveWords = lex.getReserves(); //a few more than # reserves
-    // private ReserveTable mnemonics = lex.getMnemonics(); //a few more than # reserves
     private boolean traceon;            //Controls tracing mode 
     private int level = 0;              //Controls indent for trace mode
     private boolean anyErrors;          //Set TRUE if an error happens 
@@ -92,12 +61,6 @@ public class Syntactic {
 //The interface to the syntax analyzer, initiates parsing
 // Uses variable RECUR to get return values throughout the non-terminal methods    
     public void parse() throws IOException {
-//         int recur = 0;
-// // prime the pump
-//         token = lex.GetNextToken();
-// // call PROGRAM
-//         recur = Program();
-
         // make filename pattern for symbol table and quad table output later
         String filenameBase = filein.substring(0, filein.length() - 4);
         System.out.println(filenameBase);
@@ -189,7 +152,7 @@ public class Syntactic {
                 if(token.code == lex.codeFor("BEGIN")){
                     recur = Block();
                     if(token.code == lex.codeFor("SEMIC")){
-                        //token = lex.GetNextToken();
+                        // do nothing really
                     }
                     else{
                         error(lex.reserveFor("SEMIC"), token.lexeme);    
@@ -211,7 +174,7 @@ public class Syntactic {
         return recur;
     }
 
-//Not a NT, but used to shorten Statement code body   
+    //Not a NT, but used to shorten Statement code body   
     //<variable> $COLON-EQUALS <simple expression>
     private int handleAssignment() {
         int recur = 0;
@@ -255,7 +218,7 @@ public class Syntactic {
             } else {
                 toprint = SimpleExpression();
             }
-            quads.AddQuad(6/*interp.opcodeFor("PRINT")*/, toprint, 0, 0);
+            quads.AddQuad(16/*interp.opcodeFor("PRINT")*/, toprint, 0, 0);
             //now need right ")"
             if (token.code == lex.codeFor("RPAR_")) {
                 //move on
@@ -271,24 +234,6 @@ public class Syntactic {
         trace("handleWriteln", false);
         return recur;
     }
-
-/* NT This is dummied in to only work for an identifier.  MUST BE 
-//  COMPLETED TO IMPLEMENT CFG <simple expression>
-    // private int SimpleExpression() {
-    //     int recur = 0;
-    //     if (anyErrors) {
-    //         return -1;
-    //     }
-
-    //     trace("SimpleExpression", true);
-    //     if (token.code == lex.codeFor("IDENT")) {
-    //         token = lex.GetNextToken();
-    //     }
-    //     trace("SimpleExpression", false);
-    //     return recur;
-    // }
-    */
-    
 
     /*
     PSEUDOCODE FOR SIMPLE EXPRESSION
@@ -311,7 +256,6 @@ public class Syntactic {
         return(left);
     }
     */
-
     // <simple expression> -> [<sign>]  <term>  {<addop>  <term>}*
     private int SimpleExpression() {
         int recur = 0;
@@ -385,7 +329,6 @@ int statement() { int left, right;
     }
 }
 */
-
 //Non Terminal
 //<statement>-> <variable> $COLON-EQUALS <simple expression>  
     private int Statement() {
@@ -488,7 +431,6 @@ int statement() { int left, right;
         return(result); //result is the SymbolTable index of the ident.
     }
     */
-
     // <variable> -> <identifier> 
 
     private int Variable() {
@@ -511,33 +453,7 @@ int statement() { int left, right;
         trace("Variable", false);
         return recur;
     }
-
-    /* old Variable
-    // private int Variable(){
-    //     int recur = 0;
-    //     if (anyErrors) {
-    //         return -1;
-    //     }
-
-    //     trace("Variable", true);
-
-    //     recur = Identifier();
-
-    //     // <identifier>
-    //     if(token.code == lex.codeFor("IDENT")){
-    //         //recur = Identifier();
-    //         token = lex.GetNextToken(); // advances
-    //     } else {
-    //         error("variable start", token.lexeme);
-    //     }
-
-    //     //token = lex.GetNextToken(); // advances
-
-    //     trace("Variable", false);
-    //     return recur;
-    // }
-    */
-    
+ 
     // <addop> -> $PLUS | $MINUS
     private int AddOp(){
         int recur = 0;
@@ -592,18 +508,6 @@ int statement() { int left, right;
             recur = 1;
         }
 
-        // // $PLUS
-        // if(token.code == lex.codeFor("PLUS_")){
-        //     // terminal stuff (probably in code generation part)
-        // }
-        // // $MINUS
-        // else if(token.code == lex.codeFor("MINUS")){
-        //     // terminal stuff (probably in code generation part)
-        // }
-        // else {
-        //     error("Sign", token.lexeme);
-        // }
-
         trace("Sign", false);
         return recur;
     } 
@@ -635,7 +539,6 @@ int statement() { int left, right;
             temp = GenSymbol();
             temp -= 1;
             quads.AddQuad(opcode, left, right, temp);
-               // token = lex.GetNextToken();
             left = temp;
         }
 
@@ -725,32 +628,6 @@ int statement() { int left, right;
         return recur;
     }
 
-    // OLD UConst
-    // private int UConst(){
-    //     int recur = 0;
-    //     if (anyErrors) {
-    //         return -1;
-    //     }
-
-    //     trace("UConst", true);
-
-    //     // <unsigned constant>
-    //     if(token.code == lex.codeFor("ICNST")){
-    //         // <unsigned number>
-    //         recur = UNumber();
-    //     }
-    //     // <unsigned constant>
-    //     else if(token.code == lex.codeFor("FCNST")){
-    //         // <unsigned number>
-    //         recur = UNumber();
-    //     }
-    //     else{
-    //         error("Uconst", token.lexeme);
-    //     }
-    //     trace("UConst", false);
-    //     return recur;
-    // } 
-
     // <unsigned number>-> $INTEGER
     private int UnsignedNumber() {
         int recur = 0;
@@ -773,27 +650,6 @@ int statement() { int left, right;
         return recur;
     }
 
-    // OLD UNumber
-    // private int UNumber(){
-    //     int recur = 0;
-    //     if (anyErrors) {
-    //         return -1;
-    //     }
-
-    //     trace("UNumber", true);
-    //     // $INTEGER
-    //     if(token.code == lex.codeFor("ICNST")) {
-    //         // @TODO something here'
-    //         recur = 51; // Token code 51
-    //     }
-    //     else{
-    //         error("UNumber", token.lexeme);
-    //     }
-
-    //     trace("UNumber", false);
-    //     return recur;
-    // } 
-
     // <identifier> -> $IDENTIFIER
     private int Identifier(){
         int symbolLocation = 0;
@@ -804,10 +660,7 @@ int statement() { int left, right;
         trace("Identifier", true);
 
         symbolLocation = symbolList.LookupSymbol(token.lexeme);
-        //**note: <letter>  {<letter> |<digit> | $ | - }*
-        //symbolList.AddSymbol(token.lexeme, kind, value)
-        
-        //token = lex.GetNextToken();
+
         trace("Identifier", false);
         return symbolLocation;
     }
@@ -873,7 +726,7 @@ int statement() { int left, right;
         return recur;
     }
     
-        // <relexpression> -> <simple expression> <relop> <simple expression>
+    // <relexpression> -> <simple expression> <relop> <simple expression>
     private int relExpression() {
         int left, right, saveRelop, result, temp;
         left = SimpleExpression(); // get the left operand, our ‘A’
@@ -887,6 +740,7 @@ int statement() { int left, right;
         return result;
     }
 
+    // converst relationals into opcodes based on their false branch
     private int relopToOpcode(int relop) {
         int opcode = 0;
         switch (relop) {
@@ -959,21 +813,4 @@ int statement() { int left, right;
         }
         return result;
     }
- 
-
-/*  Template for all the non-terminal method bodies
-private int exampleNonTerminal(){
-        int recur = 0;
-        if (anyErrors) {
-            return -1;
-        }
-
-        trace("NameOfThisMethod", true);
-// unique non-terminal stuff
-        trace("NameOfThisMethod", false);
-        return recur;
-
-}  
-    
-    */
 }

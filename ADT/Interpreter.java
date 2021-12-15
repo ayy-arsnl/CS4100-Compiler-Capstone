@@ -123,7 +123,7 @@ public class Interpreter {
                         PC += 1;
                         break;
 
-                    case 6: // PRINT - Write symbol table name and value of op1 to StandardOutput (console)
+                    case 16: // PRINT - Write symbol table name and value of op1 to StandardOutput (console)
                         String result = S.GetSymbol(op1);
                         char kind = S.GetDataType(op1);
                         if(kind == 'I'){
