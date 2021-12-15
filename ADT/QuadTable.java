@@ -50,6 +50,10 @@ public class QuadTable {
         this.table[index][3] = op3;
     }
 
+    public void setQuadOp3(int index, int newOp3){
+        this.table[index][3] = newOp3;
+    }
+
     public int getMax(){
         return this.maxSize;
     }

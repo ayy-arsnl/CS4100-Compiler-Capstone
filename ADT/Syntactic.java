@@ -424,13 +424,13 @@ int statement() { int left, right;
                     patchElse = quads.NextQuad(); //save backfill quad to jump around
                                                  // ELSE body, target is unknown now
                     quads.AddQuad(8 /*BR*/, 0, 0, 0); //backfill the FALSE IF branch jump 
-                    //quads.setQuadOp3(branchQuad, quads.NextQuad()); //conditional jump 
+                    quads.setQuadOp3(branchQuad, quads.NextQuad()); //conditional jump 
                     recur = Statement(); // gen ELSE body quads
                               // fill in end of ELSE part
-                    //quads.setQuadOp3(patchElse, quads.NextQuad());
+                    quads.setQuadOp3(patchElse, quads.NextQuad());
                 }
                 else { //no ELSE encountered, fix IF branch
-                    //quads.setQuadOp3(branchQuad, quads.NextQuad());
+                    quads.setQuadOp3(branchQuad, quads.NextQuad());
                 }
             }//if the THEN was found
             else{// error, no THEN
@@ -443,8 +443,9 @@ int statement() { int left, right;
             branchQuad = relExpression();
             if(token.code == lex.codeFor("DO___")){
                 token = lex.GetNextToken();
+                recur = Block();
                 quads.AddQuad(8 /*BR*/, 0, 0, saveTop);
-                //quads.setQuadOp3(branchQuad, quads.NextQuad());
+                quads.setQuadOp3(branchQuad, quads.NextQuad());
             }
             else{
                 error("DO", token.lexeme);
@@ -900,12 +901,12 @@ int statement() { int left, right;
             case 38: // GRTR_
                 opcode = 14; // BNP
                 break;
-            case 40: // GRTEQ
-                opcode = 12; // BN
-                break;
             case 41: // LESEQ
                 opcode = 11; // BP
                 break;
+            case 40: // GRTEQ
+                opcode = 12; // BN
+                break;           
             default: //
                 opcode = 0;
         }

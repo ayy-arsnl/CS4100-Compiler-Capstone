@@ -164,8 +164,9 @@ public class Interpreter {
                         if (S.GetInteger(op1) > 0){
                             PC = op3;
                             break;
+                        }else{
+                            PC+=1;
                         }
-                        PC+=1;
                         break;
 
                     case 12: // BN - Branch Negative; if op1 < 0, set program counter to op3
