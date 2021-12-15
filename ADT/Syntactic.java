@@ -880,6 +880,7 @@ int statement() { int left, right;
         saveRelop = RelOp(); // returns tokenCode of rel operator
         right = SimpleExpression(); // right operand, our ‘B’
         temp = GenSymbol(); // Create temp var in symbol table
+        temp -= 1;
         quads.AddQuad(3, left, right, temp); // compare
         result = quads.NextQuad(); // Save Q index where branch will be
         quads.AddQuad(relopToOpcode(saveRelop), temp, 0, 0); // target set later

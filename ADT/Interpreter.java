@@ -173,6 +173,8 @@ public class Interpreter {
                         if(S.GetInteger(op1) < 0){
                             PC = op3;
                             break;
+                        }else{
+                            PC+=1;
                         }
                         break;
 
@@ -180,6 +182,8 @@ public class Interpreter {
                         if(S.GetInteger(op1) != 0){
                             PC = op3;
                             break;
+                        }else{
+                            PC+=1;
                         }
                         break;
 
@@ -187,6 +191,8 @@ public class Interpreter {
                         if(S.GetInteger(op1) <= 0){
                             PC = op3;
                             break;
+                        }else{
+                            PC+=1;
                         }
                         break;
 
@@ -194,6 +200,8 @@ public class Interpreter {
                         if(S.GetInteger(op1) >= 0){
                             PC = op3;
                             break;
+                        }else{
+                            PC+=1;
                         }
                         break;
                 }
